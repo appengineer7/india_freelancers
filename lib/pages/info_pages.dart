@@ -813,14 +813,17 @@ class _JobsScreenState extends State<JobsScreen> {
       if (_selectedCategory != 'All') {
         if (_selectedCategory == 'Development & IT' &&
             !job.title.contains('Developer') &&
-            !job.title.contains('Writer'))
+            !job.title.contains('Writer')) {
           return false;
+        }
         if (_selectedCategory == 'Design & Creative' &&
-            !job.title.contains('Designer'))
+            !job.title.contains('Designer')) {
           return false;
+        }
         if (_selectedCategory == 'AI & Data' &&
-            !job.skills.contains('Blockchain'))
+            !job.skills.contains('Blockchain')) {
           return false;
+        }
       }
 
       if (_selectedType != 'Any') {
@@ -943,7 +946,7 @@ class _JobsScreenState extends State<JobsScreen> {
                               Radio<String>(
                                 value: type,
                                 groupValue: _selectedType,
-                                activeColor: AppColors.green,
+                                activeColor: AppColors.saffron,
                                 onChanged: (val) {
                                   if (val != null) {
                                     setSheetState(() {
@@ -3192,7 +3195,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
           textSpans: const [
             TextSpan(
               text:
-                  'A recent sign-in to your Upwork account (p_brightroots) from an unknown device or browser.',
+                  'A recent sign-in to your IndiaFreelancers account (p_brightroots) from an unknown device or browser.',
             ),
           ],
           date: '5 Aug',
@@ -3213,13 +3216,13 @@ class _AlertsScreenState extends State<AlertsScreen> {
           textSpans: const [
             TextSpan(
               text:
-                  'A recent sign-in to your Upwork account (p_brightroots) from an unknown device or browser.',
+                  'A recent sign-in to your IndiaFreelancers account (p_brightroots) from an unknown device or browser.',
             ),
           ],
           date: '3 Aug',
         ),
         _buildAlertItem(
-          logoText: 'up',
+          logoText: 'iF',
           textSpans: const [
             TextSpan(text: 'Top applicant: '),
             TextSpan(
@@ -3234,7 +3237,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
           date: '3 Aug',
         ),
         _buildAlertItem(
-          logoText: 'up',
+          logoText: 'iF',
           textSpans: const [
             TextSpan(text: 'The work week has ended, and your '),
             TextSpan(
@@ -3250,7 +3253,7 @@ class _AlertsScreenState extends State<AlertsScreen> {
           date: '3 Aug',
         ),
         _buildAlertItem(
-          logoText: 'up',
+          logoText: 'iF',
           textSpans: const [
             TextSpan(text: 'Top applicant: '),
             TextSpan(
@@ -3338,12 +3341,12 @@ class _AlertsScreenState extends State<AlertsScreen> {
                 child: Icon(icon, color: AppColors.navy, size: 20),
               )
             else if (logoText != null)
-              const CircleAvatar(
+              CircleAvatar(
                 radius: 18,
-                backgroundColor: Colors.black,
+                backgroundColor: AppColors.navy,
                 child: Text(
-                  'up',
-                  style: TextStyle(
+                  logoText,
+                  style: const TextStyle(
                     color: Colors.white,
                     fontWeight: FontWeight.bold,
                     fontSize: 12,

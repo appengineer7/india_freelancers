@@ -646,17 +646,30 @@ class _BottomNavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final color = selected ? AppColors.green : AppColors.ink500;
+    final activeColor = AppColors.saffron;
+    final inactiveColor = AppColors.ink500;
+    final color = selected ? activeColor : inactiveColor;
+
     return InkWell(
       onTap: onTap,
       borderRadius: BorderRadius.circular(12),
       child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 8),
+        padding: const EdgeInsets.symmetric(vertical: 6),
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
+            AnimatedContainer(
+              duration: const Duration(milliseconds: 200),
+              width: selected ? 20 : 0,
+              height: selected ? 3 : 0,
+              margin: const EdgeInsets.only(bottom: 3),
+              decoration: BoxDecoration(
+                color: AppColors.saffron,
+                borderRadius: BorderRadius.circular(2),
+              ),
+            ),
             Icon(icon, color: color, size: 24),
-            const SizedBox(height: 4),
+            const SizedBox(height: 3),
             Text(
               label,
               style: TextStyle(

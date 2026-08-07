@@ -346,7 +346,7 @@ class _ChatListTile extends StatelessWidget {
             border: Border(
               bottom: const BorderSide(color: AppColors.cardBorder, width: 0.8),
               left: isSelected
-                  ? const BorderSide(color: AppColors.green, width: 4)
+                  ? const BorderSide(color: AppColors.saffron, width: 4)
                   : BorderSide.none,
             ),
           ),
@@ -791,8 +791,8 @@ class _ChatComposer extends StatelessWidget {
           ),
           const SizedBox(width: 6),
           IconButton(
-            icon: const Icon(Icons.send_rounded, size: 24),
-            color: AppColors.green,
+            icon: const Icon(Icons.send_rounded, color: Colors.white, size: 20),
+            color: AppColors.saffron,
             onPressed: () {
               if (controller.text.trim().isNotEmpty) {
                 onSend();

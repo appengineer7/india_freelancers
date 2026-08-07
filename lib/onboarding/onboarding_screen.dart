@@ -17,17 +17,17 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   static const _pages = [
     _OnboardingPageData(
       icon: Icons.people_alt_rounded,
-      iconColor: AppColors.primaryBlue,
-      iconBg: Color(0xffe8f1ff),
-      title: 'Find the Best Freelancers',
-      subtitle: 'Connect with verified professionals across India.',
+      iconColor: AppColors.navy,
+      iconBg: AppColors.navy100,
+      title: 'Find Top Indian Freelancers',
+      subtitle: 'Connect with verified skilled professionals across India.',
     ),
     _OnboardingPageData(
       icon: Icons.verified_user_rounded,
       iconColor: AppColors.green,
       iconBg: AppColors.green100,
       title: 'Hire with Confidence',
-      subtitle: 'Review ratings, portfolios and feedback before hiring.',
+      subtitle: 'GST & TDS aware escrow payments with complete security.',
     ),
     _OnboardingPageData(
       icon: Icons.rocket_launch_rounded,
@@ -35,15 +35,15 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
       iconBg: AppColors.saffron100,
       title: 'Get Work Done Faster',
       subtitle:
-          'Communicate, collaborate and track progress in one place.',
+          'Communicate, collaborate and track progress in one shared workroom.',
     ),
     _OnboardingPageData(
       icon: Icons.handshake_rounded,
       iconColor: AppColors.navy700,
-      iconBg: Color(0xffe8edf7),
+      iconBg: AppColors.navy100,
       title: 'Ready to Get Started?',
       subtitle:
-          'Join thousands of clients and freelancers building success together.',
+          'Join India\'s leading freelance marketplace today.',
     ),
   ];
 
@@ -157,7 +157,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   height: 8,
                   decoration: BoxDecoration(
                     color: active
-                        ? AppColors.primaryBlue
+                        ? AppColors.saffron
                         : AppColors.border,
                     borderRadius: BorderRadius.circular(999),
                   ),

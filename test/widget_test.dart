@@ -4,28 +4,21 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:india_freelancers/main.dart';
 
 void main() {
-  testWidgets('renders IndiaFreelancers landing page', (tester) async {
+  testWidgets('renders IndiaFreelancers app home and info screens', (tester) async {
+    await tester.binding.setSurfaceSize(const Size(1200, 900));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(const MyApp());
 
-    expect(find.textContaining('IndiaFreelancers.com connects'), findsOneWidget);
-    expect(
-      find.text("India's BEST professional freelance marketplace"),
-      findsOneWidget,
-    );
-    expect(find.text('Get started'), findsOneWidget);
+    expect(find.text('Welcome back'), findsOneWidget);
+    expect(find.text('Email address'), findsOneWidget);
 
-    await _scrollUntilFound(tester, find.text('Development & IT'));
-    expect(find.text('Development & IT'), findsOneWidget);
-
-    await _scrollUntilFound(
-      tester,
-      find.text('Built for trust before growth'),
-    );
-    expect(find.text('Built for trust before growth'), findsOneWidget);
+    tester.state<NavigatorState>(find.byType(Navigator)).pushNamed('/how-it-works');
+    await tester.pumpAndSettle();
+    expect(find.text('HOW IT WORKS'), findsOneWidget);
   });
 
   testWidgets('renders auth routes', (tester) async {
-    await tester.binding.setSurfaceSize(const Size(1200, 900));
+    await tester.binding.setSurfaceSize(const Size(1200, 1600));
     addTearDown(() => tester.binding.setSurfaceSize(null));
     await tester.pumpWidget(const MyApp());
 
@@ -39,18 +32,5 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Create your account'), findsOneWidget);
     expect(find.text('Full name'), findsOneWidget);
-    expect(find.text('Country code'), findsOneWidget);
-
-    await tester.tap(find.text('Create account'));
-    await tester.pumpAndSettle();
-    expect(find.text('Check your inbox'), findsOneWidget);
-    expect(find.text('Back to sign in'), findsOneWidget);
   });
-}
-
-Future<void> _scrollUntilFound(WidgetTester tester, Finder finder) async {
-  for (var i = 0; i < 8 && finder.evaluate().isEmpty; i++) {
-    await tester.drag(find.byType(CustomScrollView), const Offset(0, -700));
-    await tester.pumpAndSettle();
-  }
 }

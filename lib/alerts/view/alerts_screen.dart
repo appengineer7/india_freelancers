@@ -35,7 +35,7 @@ class _AlertsFeedViewState extends State<_AlertsFeedView> {
     ScaffoldMessenger.of(context).showSnackBar(
       const SnackBar(
         content: Text('All notifications marked as read'),
-        backgroundColor: AppColors.green,
+        backgroundColor: AppColors.saffron,
         duration: Duration(seconds: 2),
       ),
     );
@@ -101,9 +101,8 @@ class _AlertsFeedViewState extends State<_AlertsFeedView> {
                                 overflow: TextOverflow.ellipsis,
                                 style: TextStyle(
                                   color: AppColors.navy,
-                                  fontSize: 18.5,
+                                  fontSize: 18,
                                   fontWeight: FontWeight.w900,
-                                  letterSpacing: -0.3,
                                 ),
                               ),
                             ),
@@ -112,7 +111,7 @@ class _AlertsFeedViewState extends State<_AlertsFeedView> {
                               Container(
                                 padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                                 decoration: BoxDecoration(
-                                  color: AppColors.green,
+                                  color: AppColors.saffron,
                                   borderRadius: BorderRadius.circular(12),
                                 ),
                                 child: Text(
@@ -134,12 +133,12 @@ class _AlertsFeedViewState extends State<_AlertsFeedView> {
                         child: const Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.done_all_rounded, size: 16, color: AppColors.green),
+                            Icon(Icons.done_all_rounded, size: 16, color: AppColors.saffron),
                             SizedBox(width: 4),
                             Text(
                               'Mark all as read',
                               style: TextStyle(
-                                color: AppColors.green,
+                                color: AppColors.saffron,
                                 fontSize: 12,
                                 fontWeight: FontWeight.w700,
                               ),
@@ -169,10 +168,10 @@ class _AlertsFeedViewState extends State<_AlertsFeedView> {
                             margin: const EdgeInsets.only(right: 8),
                             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
                             decoration: BoxDecoration(
-                              color: isActive ? AppColors.green : Colors.transparent,
+                              color: isActive ? AppColors.saffron : Colors.transparent,
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
-                                color: isActive ? AppColors.green : AppColors.cardBorder,
+                                color: isActive ? AppColors.saffron : AppColors.cardBorder,
                               ),
                             ),
                             child: Text(

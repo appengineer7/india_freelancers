@@ -158,7 +158,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               const _AuthLabel('I am joining as a'),
               const SizedBox(height: 8),
               DropdownButtonFormField<String>(
-                value: controller.accountType.isEmpty ? null : controller.accountType,
+                initialValue: controller.accountType.isEmpty ? null : controller.accountType,
                 items: const [
                   DropdownMenuItem(value: '', child: Text('Select one')),
                   DropdownMenuItem(

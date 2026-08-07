@@ -33,24 +33,37 @@ class HomeScreen extends StatelessWidget {
 }
 
 class AppColors {
-  static const primaryBlue = Color(0xff108a00);
-  static const primaryBlueLight = Color(0xff14a800);
-  static const navy = Color(0xff001e00);
-  static const navy700 = Color(0xff173b18);
-  static const green = Color(0xff108a00);
-  static const green500 = Color(0xff14a800);
-  static const green100 = Color(0xffe4ebe4);
+  static const primary = Color(0xfff56e06);
+  static const primaryLight = Color(0xffff8a2b);
+  static const primaryBlue = Color(0xff071d45);
+  static const primaryBlueLight = Color(0xff0f2f6b);
+  static const navy = Color(0xff071d45);
+  static const navy700 = Color(0xff0f2f6b);
+  static const navy600 = Color(0xff123a7f);
+  static const navy500 = Color(0xff1c478f);
+  static const navy100 = Color(0xffe5eaf3);
+
+  static const green = Color(0xff0d8236);
+  static const green500 = Color(0xff12994a);
+  static const green700 = Color(0xff0a6b2c);
+  static const green100 = Color(0xffdff3e6);
+  static const green200 = Color(0xffb7e3c6);
+
   static const saffron = Color(0xfff56e06);
+  static const saffron700 = Color(0xffb85200);
+  static const saffron600 = Color(0xffe06305);
   static const saffron400 = Color(0xffff8a2b);
+  static const saffron200 = Color(0xffffcfa6);
   static const saffron100 = Color(0xffffe9d5);
-  static const cream50 = Color(0xfff7faf7);
-  static const cream100 = Color(0xfff2f7f2);
-  static const ink900 = Color(0xff001e00);
-  static const ink700 = Color(0xff333333);
-  static const ink500 = Color(0xff5e6d55);
-  static const ink300 = Color(0xff9aaa97);
-  static const border = Color(0xffd5e0d5);
-  static const cardBorder = Color(0xffe4ebe4);
+
+  static const cream50 = Color(0xfff6f8fb);
+  static const cream100 = Color(0xffeef2fb);
+  static const ink900 = Color(0xff071d45);
+  static const ink700 = Color(0xff38414f);
+  static const ink500 = Color(0xff5c6373);
+  static const ink300 = Color(0xff98a0ad);
+  static const border = Color(0xffd5dae1);
+  static const cardBorder = Color(0xffeef1f5);
 }
 
 class _Constrained extends StatelessWidget {
@@ -88,14 +101,44 @@ class BrandLockup extends StatelessWidget {
             child: FittedBox(
               fit: BoxFit.scaleDown,
               alignment: Alignment.centerLeft,
-              child: Text(
-                'IndiaFreelancers',
-                style: TextStyle(
-                  color: AppColors.navy,
-                  fontSize: compact ? 17 : 20,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 0,
-                ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  RichText(
+                    text: TextSpan(
+                      style: TextStyle(
+                        fontSize: compact ? 17 : 20,
+                        fontWeight: FontWeight.w900,
+                        letterSpacing: -0.3,
+                      ),
+                      children: const [
+                        TextSpan(
+                          text: 'India',
+                          style: TextStyle(color: AppColors.green),
+                        ),
+                        TextSpan(
+                          text: 'Freelancers',
+                          style: TextStyle(color: AppColors.navy),
+                        ),
+                        TextSpan(
+                          text: '.com',
+                          style: TextStyle(color: AppColors.saffron),
+                        ),
+                      ],
+                    ),
+                  ),
+                  if (!compact)
+                    const Text(
+                      'Talent. Trust. Opportunity.',
+                      style: TextStyle(
+                        color: AppColors.ink500,
+                        fontSize: 10,
+                        fontWeight: FontWeight.w600,
+                        letterSpacing: 0.2,
+                      ),
+                    ),
+                ],
               ),
             ),
           ),
@@ -104,60 +147,7 @@ class BrandLockup extends StatelessWidget {
   }
 }
 
-class _LogoMarkPainter extends CustomPainter {
-  const _LogoMarkPainter();
 
-  @override
-  void paint(Canvas canvas, Size size) {
-    final rect = Offset.zero & size;
-    final r = size.width * 0.18;
-    final bg = Paint()..color = Colors.white;
-    canvas.drawRRect(
-      RRect.fromRectAndRadius(rect.deflate(1), Radius.circular(r)),
-      bg,
-    );
-
-    final stroke = Paint()
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = size.width * 0.08
-      ..strokeCap = StrokeCap.round;
-    final center = rect.center;
-    final radius = size.width * 0.28;
-
-    stroke.color = AppColors.green;
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius),
-      math.pi * 0.55,
-      math.pi * 0.82,
-      false,
-      stroke,
-    );
-    stroke.color = AppColors.navy700;
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius),
-      math.pi * 1.38,
-      math.pi * 0.75,
-      false,
-      stroke,
-    );
-    stroke.color = AppColors.saffron;
-    canvas.drawArc(
-      Rect.fromCircle(center: center, radius: radius),
-      math.pi * 0.04,
-      math.pi * 0.45,
-      false,
-      stroke,
-    );
-    canvas.drawCircle(
-      center,
-      size.width * 0.075,
-      Paint()..color = AppColors.navy,
-    );
-  }
-
-  @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
-}
 
 class HomeSearchBar extends StatelessWidget {
   const HomeSearchBar({super.key});
@@ -375,134 +365,7 @@ class AppStatsBar extends StatelessWidget {
   }
 }
 
-class _HeroEyebrow extends StatelessWidget {
-  const _HeroEyebrow();
 
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
-      decoration: BoxDecoration(
-        color: Colors.white.withValues(alpha: 0.14),
-        borderRadius: BorderRadius.circular(999),
-      ),
-      child: const Text(
-        "India's BEST professional freelance marketplace",
-        style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800),
-      ),
-    );
-  }
-}
-
-class _HeroTitle extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    final width = MediaQuery.sizeOf(context).width;
-    final size = width < 480 ? 28.0 : 34.0;
-
-    return RichText(
-      text: TextSpan(
-        style: TextStyle(
-          color: Colors.white,
-          fontSize: size,
-          fontWeight: FontWeight.w900,
-          height: 1.02,
-          letterSpacing: 0,
-        ),
-        children: const [
-          TextSpan(text: 'Hire '),
-          TextSpan(
-            text: 'excellent talent',
-            style: TextStyle(color: AppColors.saffron400),
-          ),
-          TextSpan(text: ' from India. Create with confidence.'),
-        ],
-      ),
-    );
-  }
-}
-
-class _HeroStats extends StatelessWidget {
-  const _HeroStats();
-
-  @override
-  Widget build(BuildContext context) {
-    final stats = HomeBinding.of(context).heroStats;
-    final width = MediaQuery.sizeOf(context).width;
-
-    return LayoutBuilder(
-      builder: (context, constraints) {
-        final itemWidth = width < 400
-            ? (constraints.maxWidth - 10) / 2
-            : (constraints.maxWidth - 20) / 3;
-
-        return Wrap(
-          spacing: 10,
-          runSpacing: 10,
-          children: [
-            for (final stat in stats)
-              SizedBox(
-                width: width < 640 ? itemWidth : null,
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 14,
-                    vertical: 14,
-                  ),
-                  decoration: BoxDecoration(
-                    color: Colors.white.withValues(alpha: 0.12),
-                    borderRadius: BorderRadius.circular(14),
-                    border: Border.all(
-                      color: Colors.white.withValues(alpha: 0.22),
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        stat.value,
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontSize: 20,
-                          fontWeight: FontWeight.w900,
-                          height: 1.1,
-                        ),
-                      ),
-                      const SizedBox(height: 4),
-                      Text(
-                        stat.label,
-                        style: TextStyle(
-                          color: Colors.white.withValues(alpha: 0.76),
-                          fontSize: 12,
-                          height: 1.35,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-              ),
-          ],
-        );
-      },
-    );
-  }
-}
-
-class _HeroVisual extends StatelessWidget {
-  const _HeroVisual();
-
-  @override
-  Widget build(BuildContext context) {
-    return CustomPaint(
-      painter: _HeroVisualPainter(),
-      child: Align(
-        alignment: const Alignment(0.72, 0.05),
-        child: MediaQuery.sizeOf(context).width < 900
-            ? const SizedBox.shrink()
-            : const _FloatingCards(),
-      ),
-    );
-  }
-}
 
 class _HeroVisualPainter extends CustomPainter {
   @override
@@ -1745,8 +1608,8 @@ class AppButton extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final filled = switch (variant) {
-      ButtonVariant.primary => const [AppColors.green500, AppColors.green],
-      ButtonVariant.secondary => const [AppColors.navy700, AppColors.navy],
+      ButtonVariant.primary => const [AppColors.saffron400, AppColors.saffron],
+      ButtonVariant.secondary => const [AppColors.green500, AppColors.green],
       ButtonVariant.saffron => const [AppColors.saffron400, AppColors.saffron],
       ButtonVariant.light || ButtonVariant.heroGhost => null,
     };

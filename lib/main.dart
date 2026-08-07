@@ -42,12 +42,23 @@ class IndiaFreelancersApp extends StatelessWidget {
       theme: ThemeData(
         useMaterial3: true,
         colorScheme: ColorScheme.fromSeed(
-          seedColor: AppColors.green,
-          primary: AppColors.green,
-          secondary: AppColors.saffron,
+          seedColor: AppColors.saffron,
+          primary: AppColors.saffron,
+          secondary: AppColors.green,
+          tertiary: AppColors.navy,
           surface: AppColors.cream50,
         ),
         scaffoldBackgroundColor: AppColors.cream50,
+        elevatedButtonTheme: ElevatedButtonThemeData(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.saffron,
+            foregroundColor: Colors.white,
+            elevation: 0,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+        ),
         textTheme: manrope
             .copyWith(
               displayLarge: manrope.displayLarge?.copyWith(

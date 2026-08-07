@@ -178,15 +178,15 @@ class _JobsFeedViewState extends State<_JobsFeedView> {
                       return ChoiceChip(
                         label: Text(cat),
                         selected: isSelected,
-                        selectedColor: AppColors.green.withValues(alpha: 0.15),
+                        selectedColor: AppColors.saffron100,
                         backgroundColor: AppColors.cream50,
                         labelStyle: TextStyle(
-                          color: isSelected ? AppColors.green : AppColors.navy,
+                          color: isSelected ? AppColors.saffron700 : AppColors.navy,
                           fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
                           fontSize: 13,
                         ),
                         side: BorderSide(
-                          color: isSelected ? AppColors.green : AppColors.cardBorder,
+                          color: isSelected ? AppColors.saffron : AppColors.cardBorder,
                         ),
                         onSelected: (val) {
                           if (val) {
@@ -215,15 +215,15 @@ class _JobsFeedViewState extends State<_JobsFeedView> {
                         child: ChoiceChip(
                           label: Text(type),
                           selected: isSelected,
-                          selectedColor: AppColors.green.withValues(alpha: 0.15),
+                          selectedColor: AppColors.saffron100,
                           backgroundColor: AppColors.cream50,
                           labelStyle: TextStyle(
-                            color: isSelected ? AppColors.green : AppColors.navy,
+                            color: isSelected ? AppColors.saffron700 : AppColors.navy,
                             fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
                             fontSize: 13,
                           ),
                           side: BorderSide(
-                            color: isSelected ? AppColors.green : AppColors.cardBorder,
+                            color: isSelected ? AppColors.saffron : AppColors.cardBorder,
                           ),
                           onSelected: (val) {
                             if (val) {
@@ -239,7 +239,7 @@ class _JobsFeedViewState extends State<_JobsFeedView> {
                   ElevatedButton(
                     onPressed: () => Navigator.of(context).pop(),
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.green,
+                      backgroundColor: AppColors.saffron,
                       padding: const EdgeInsets.symmetric(vertical: 14),
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(10),
@@ -490,7 +490,7 @@ class _JobsFeedViewState extends State<_JobsFeedView> {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
                             content: Text('Submitting proposal for "${job.title}"'),
-                            backgroundColor: AppColors.green,
+                            backgroundColor: AppColors.saffron,
                           ),
                         );
                       },
@@ -504,7 +504,7 @@ class _JobsFeedViewState extends State<_JobsFeedView> {
                         ),
                       ),
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: AppColors.green,
+                        backgroundColor: AppColors.saffron,
                         padding: const EdgeInsets.symmetric(vertical: 16),
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
@@ -633,10 +633,10 @@ class _JobsFeedViewState extends State<_JobsFeedView> {
                             margin: const EdgeInsets.only(right: 8),
                             padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
                             decoration: BoxDecoration(
-                              color: isActive ? AppColors.green : Colors.transparent,
+                              color: isActive ? AppColors.saffron : Colors.transparent,
                               borderRadius: BorderRadius.circular(20),
                               border: Border.all(
-                                color: isActive ? AppColors.green : AppColors.cardBorder,
+                                color: isActive ? AppColors.saffron : AppColors.cardBorder,
                               ),
                             ),
                             child: Text(
