@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 
+import '../../auth/bindings/auth_binding.dart';
 import '../../core/site_shell.dart';
 import '../../home/view/home_screen.dart';
 import '../bindings/jobs_binding.dart';
@@ -9,9 +10,7 @@ class JobsScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const JobsBinding(
-      child: _JobsFeedView(),
-    );
+    return const JobsBinding(child: _JobsFeedView());
   }
 }
 
@@ -25,7 +24,8 @@ class _JobsFeedView extends StatefulWidget {
 class _JobsFeedViewState extends State<_JobsFeedView> {
   final TextEditingController _searchController = TextEditingController();
   String _searchQuery = '';
-  String _activeTab = 'Best matches'; // Best matches, Most recent, Saved jobs, My feed
+  String _activeTab =
+      'Best matches'; // Best matches, Most recent, Saved jobs, My feed
   String _selectedCategory = 'All';
   String _selectedType = 'Any'; // Any, Fixed price, Hourly
   final Set<int> _savedJobIds = {2, 3};
@@ -52,7 +52,9 @@ class _JobsFeedViewState extends State<_JobsFeedView> {
         final query = _searchQuery.toLowerCase();
         final matchesTitle = job.title.toLowerCase().contains(query);
         final matchesDesc = job.description.toLowerCase().contains(query);
-        final matchesSkills = job.skills.any((s) => s.toLowerCase().contains(query));
+        final matchesSkills = job.skills.any(
+          (s) => s.toLowerCase().contains(query),
+        );
         if (!matchesTitle && !matchesDesc && !matchesSkills) return false;
       }
 
@@ -62,11 +64,21 @@ class _JobsFeedViewState extends State<_JobsFeedView> {
 
       if (_selectedCategory != 'All') {
         if (_selectedCategory == 'Development & IT' &&
-            !job.skills.any((s) => ['Flutter', 'React', 'Node.js', 'HTML5', 'React Native'].contains(s))) {
+            !job.skills.any(
+              (s) => [
+                'Flutter',
+                'React',
+                'Node.js',
+                'HTML5',
+                'React Native',
+              ].contains(s),
+            )) {
           return false;
         }
         if (_selectedCategory == 'Design & Creative' &&
-            !job.skills.any((s) => ['Figma', 'UI/UX Design', 'Wireframing'].contains(s))) {
+            !job.skills.any(
+              (s) => ['Figma', 'UI/UX Design', 'Wireframing'].contains(s),
+            )) {
           return false;
         }
         if (_selectedCategory == 'AI & Data' &&
@@ -168,34 +180,41 @@ class _JobsFeedViewState extends State<_JobsFeedView> {
                   Wrap(
                     spacing: 8,
                     runSpacing: 8,
-                    children: [
-                      'All',
-                      'Development & IT',
-                      'Design & Creative',
-                      'AI & Data',
-                    ].map((cat) {
-                      final isSelected = _selectedCategory == cat;
-                      return ChoiceChip(
-                        label: Text(cat),
-                        selected: isSelected,
-                        selectedColor: AppColors.saffron100,
-                        backgroundColor: AppColors.cream50,
-                        labelStyle: TextStyle(
-                          color: isSelected ? AppColors.saffron700 : AppColors.navy,
-                          fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
-                          fontSize: 13,
-                        ),
-                        side: BorderSide(
-                          color: isSelected ? AppColors.saffron : AppColors.cardBorder,
-                        ),
-                        onSelected: (val) {
-                          if (val) {
-                            setSheetState(() => _selectedCategory = cat);
-                            setState(() {});
-                          }
-                        },
-                      );
-                    }).toList(),
+                    children:
+                        [
+                          'All',
+                          'Development & IT',
+                          'Design & Creative',
+                          'AI & Data',
+                        ].map((cat) {
+                          final isSelected = _selectedCategory == cat;
+                          return ChoiceChip(
+                            label: Text(cat),
+                            selected: isSelected,
+                            selectedColor: AppColors.saffron100,
+                            backgroundColor: AppColors.cream50,
+                            labelStyle: TextStyle(
+                              color: isSelected
+                                  ? AppColors.saffron700
+                                  : AppColors.navy,
+                              fontWeight: isSelected
+                                  ? FontWeight.w800
+                                  : FontWeight.w600,
+                              fontSize: 13,
+                            ),
+                            side: BorderSide(
+                              color: isSelected
+                                  ? AppColors.saffron
+                                  : AppColors.cardBorder,
+                            ),
+                            onSelected: (val) {
+                              if (val) {
+                                setSheetState(() => _selectedCategory = cat);
+                                setState(() {});
+                              }
+                            },
+                          );
+                        }).toList(),
                   ),
                   const SizedBox(height: 20),
                   const Text(
@@ -218,12 +237,18 @@ class _JobsFeedViewState extends State<_JobsFeedView> {
                           selectedColor: AppColors.saffron100,
                           backgroundColor: AppColors.cream50,
                           labelStyle: TextStyle(
-                            color: isSelected ? AppColors.saffron700 : AppColors.navy,
-                            fontWeight: isSelected ? FontWeight.w800 : FontWeight.w600,
+                            color: isSelected
+                                ? AppColors.saffron700
+                                : AppColors.navy,
+                            fontWeight: isSelected
+                                ? FontWeight.w800
+                                : FontWeight.w600,
                             fontSize: 13,
                           ),
                           side: BorderSide(
-                            color: isSelected ? AppColors.saffron : AppColors.cardBorder,
+                            color: isSelected
+                                ? AppColors.saffron
+                                : AppColors.cardBorder,
                           ),
                           onSelected: (val) {
                             if (val) {
@@ -393,7 +418,10 @@ class _JobsFeedViewState extends State<_JobsFeedView> {
                     runSpacing: 8,
                     children: job.skills.map((skill) {
                       return Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
                         decoration: BoxDecoration(
                           color: AppColors.cream50,
                           borderRadius: BorderRadius.circular(16),
@@ -439,13 +467,19 @@ class _JobsFeedViewState extends State<_JobsFeedView> {
                                   ? Icons.verified_rounded
                                   : Icons.gpp_maybe_rounded,
                               size: 18,
-                              color: job.paymentVerified ? AppColors.green : Colors.amber.shade700,
+                              color: job.paymentVerified
+                                  ? AppColors.green
+                                  : Colors.amber.shade700,
                             ),
                             const SizedBox(width: 6),
                             Text(
-                              job.paymentVerified ? 'Payment Verified' : 'Payment Unverified',
+                              job.paymentVerified
+                                  ? 'Payment Verified'
+                                  : 'Payment Unverified',
                               style: TextStyle(
-                                color: job.paymentVerified ? AppColors.green : Colors.amber.shade900,
+                                color: job.paymentVerified
+                                    ? AppColors.green
+                                    : Colors.amber.shade900,
                                 fontWeight: FontWeight.w700,
                                 fontSize: 13.5,
                               ),
@@ -455,7 +489,11 @@ class _JobsFeedViewState extends State<_JobsFeedView> {
                         const SizedBox(height: 8),
                         Row(
                           children: [
-                            const Icon(Icons.star_rounded, size: 18, color: AppColors.saffron),
+                            const Icon(
+                              Icons.star_rounded,
+                              size: 18,
+                              color: AppColors.saffron,
+                            ),
                             const SizedBox(width: 4),
                             Text(
                               '${job.rating > 0 ? job.rating : 'New'} client rating',
@@ -489,12 +527,18 @@ class _JobsFeedViewState extends State<_JobsFeedView> {
                         Navigator.of(context).pop();
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text('Submitting proposal for "${job.title}"'),
+                            content: Text(
+                              'Submitting proposal for "${job.title}"',
+                            ),
                             backgroundColor: AppColors.saffron,
                           ),
                         );
                       },
-                      icon: const Icon(Icons.send_rounded, size: 18, color: Colors.white),
+                      icon: const Icon(
+                        Icons.send_rounded,
+                        size: 18,
+                        color: Colors.white,
+                      ),
                       label: const Text(
                         'Submit a Proposal',
                         style: TextStyle(
@@ -525,185 +569,504 @@ class _JobsFeedViewState extends State<_JobsFeedView> {
   @override
   Widget build(BuildContext context) {
     final jobs = _filteredJobs;
+    final displayName = AuthBinding.maybeOf(context)?.displayName.trim();
+    final welcomeName = displayName == null || displayName.isEmpty
+        ? 'nisha'
+        : displayName;
 
     return AppScaffold(
       currentRoute: '/jobs',
       body: Container(
-        color: const Color(0xfff8f9fa),
-        child: Column(
+        color: AppColors.cream100,
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(20, 24, 20, 80),
           children: [
-            // Top Search & Tabs Section Container
-            Container(
-              color: Colors.white,
-              padding: const EdgeInsets.fromLTRB(16, 12, 16, 0),
-              child: Column(
-                children: [
-                  // Search Bar
-                  Row(
-                    children: [
-                      Expanded(
-                        child: Container(
-                          height: 44,
-                          decoration: BoxDecoration(
-                            color: AppColors.cream50,
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(color: AppColors.cardBorder),
-                          ),
-                          child: TextField(
-                            controller: _searchController,
-                            style: const TextStyle(
-                              fontSize: 14.5,
-                              color: AppColors.navy,
-                              fontWeight: FontWeight.w600,
-                            ),
-                            decoration: InputDecoration(
-                              hintText: 'Search for jobs (e.g. Flutter, React, Figma)',
-                              hintStyle: const TextStyle(
-                                color: AppColors.ink500,
-                                fontSize: 13.5,
-                                fontWeight: FontWeight.w500,
-                              ),
-                              prefixIcon: const Icon(
-                                Icons.search_rounded,
-                                color: AppColors.ink500,
-                                size: 20,
-                              ),
-                              suffixIcon: _searchQuery.isNotEmpty
-                                  ? IconButton(
-                                      icon: const Icon(Icons.close_rounded, size: 18),
-                                      color: AppColors.ink500,
-                                      onPressed: () {
-                                        _searchController.clear();
-                                      },
-                                    )
-                                  : null,
-                              border: InputBorder.none,
-                              contentPadding: const EdgeInsets.symmetric(vertical: 10),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-
-                      // Filter Icon Button
-                      Container(
-                        width: 44,
-                        height: 44,
-                        decoration: BoxDecoration(
-                          color: AppColors.cream50,
-                          borderRadius: BorderRadius.circular(10),
-                          border: Border.all(color: AppColors.cardBorder),
-                        ),
-                        child: IconButton(
-                          icon: const Icon(Icons.tune_rounded, size: 20),
-                          color: AppColors.green,
-                          tooltip: 'Filter options',
-                          onPressed: _openFiltersSheet,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 14),
-
-                  // Horizontal Category Pills
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    padding: const EdgeInsets.only(bottom: 12),
-                    child: Row(
-                      children: [
-                        'Best matches',
-                        'Most recent',
-                        'Saved jobs (${_savedJobIds.length})',
-                        'My feed',
-                      ].map((tab) {
-                        final isActive = _activeTab == tab ||
-                            (_activeTab == 'Saved jobs' && tab.startsWith('Saved jobs'));
-
-                        return GestureDetector(
-                          onTap: () {
-                            setState(() {
-                              if (tab.startsWith('Saved jobs')) {
-                                _activeTab = 'Saved jobs';
-                              } else {
-                                _activeTab = tab;
-                              }
-                            });
-                          },
-                          child: Container(
-                            margin: const EdgeInsets.only(right: 8),
-                            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
-                            decoration: BoxDecoration(
-                              color: isActive ? AppColors.saffron : Colors.transparent,
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: isActive ? AppColors.saffron : AppColors.cardBorder,
-                              ),
-                            ),
-                            child: Text(
-                              tab,
-                              style: TextStyle(
-                                color: isActive ? Colors.white : AppColors.ink700,
-                                fontSize: 13,
-                                fontWeight: isActive ? FontWeight.w800 : FontWeight.w600,
-                              ),
-                            ),
-                          ),
-                        );
-                      }).toList(),
-                    ),
-                  ),
-                ],
+            Text(
+              'Welcome back, $welcomeName',
+              maxLines: 1,
+              overflow: TextOverflow.ellipsis,
+              style: const TextStyle(
+                color: AppColors.navy,
+                fontWeight: FontWeight.w900,
+                fontSize: 15,
+                height: 1.25,
               ),
             ),
-            const Divider(height: 1, color: AppColors.cardBorder),
-
-            // Job Cards List View
-            Expanded(
-              child: jobs.isEmpty
-                  ? Center(
-                      child: Padding(
-                        padding: const EdgeInsets.all(32.0),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Icon(Icons.search_off_rounded, size: 48, color: Colors.grey.shade400),
-                            const SizedBox(height: 12),
-                            Text(
-                              _searchQuery.isNotEmpty
-                                  ? 'No jobs found matching "$_searchQuery"'
-                                  : 'No saved jobs found',
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                color: AppColors.ink500,
-                                fontSize: 15,
-                                fontWeight: FontWeight.w700,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    )
-                  : ListView.builder(
-                      padding: const EdgeInsets.fromLTRB(16, 16, 16, 80),
-                      itemCount: jobs.length,
-                      itemBuilder: (context, index) {
-                        final job = jobs[index];
-                        final isSaved = _savedJobIds.contains(job.id);
-
-                        return _JobCardContainer(
-                          job: job,
-                          isSaved: isSaved,
-                          onToggleSave: () => _toggleSaveJob(job.id),
-                          onTap: () => _showJobDetailModal(job),
-                        );
-                      },
-                    ),
+            const SizedBox(height: 8),
+            const Text(
+              'Here is a quick way into the tools for your active account mode.',
+              style: TextStyle(
+                color: AppColors.ink500,
+                fontWeight: FontWeight.w500,
+                fontSize: 17,
+                height: 1.5,
+              ),
             ),
+            const SizedBox(height: 18),
+            _JobsSearchFilterBar(
+              searchController: _searchController,
+              searchQuery: _searchQuery,
+              onClearSearch: _searchController.clear,
+              onOpenFilters: _openFiltersSheet,
+            ),
+            if (_searchQuery.isEmpty) ...[
+              const SizedBox(height: 22),
+              _AccountModeCard(onActivateMode: _openFiltersSheet),
+              const SizedBox(height: 18),
+              _FindingWorkCard(
+                activeTab: _activeTab,
+                savedCount: _savedJobIds.length,
+                onTabSelected: (tab) {
+                  setState(() {
+                    _activeTab = tab;
+                  });
+                },
+              ),
+            ],
+            const SizedBox(height: 18),
+            Row(
+              children: [
+                const Expanded(
+                  child: Text(
+                    'Posted jobs',
+                    style: TextStyle(
+                      color: AppColors.navy,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 20,
+                    ),
+                  ),
+                ),
+                Text(
+                  '${jobs.length} found',
+                  style: const TextStyle(
+                    color: AppColors.ink500,
+                    fontWeight: FontWeight.w700,
+                    fontSize: 13,
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            if (jobs.isEmpty)
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 40),
+                child: Column(
+                  children: [
+                    Icon(
+                      Icons.search_off_rounded,
+                      size: 48,
+                      color: Colors.grey.shade400,
+                    ),
+                    const SizedBox(height: 12),
+                    Text(
+                      _searchQuery.isNotEmpty
+                          ? 'No jobs found matching "$_searchQuery"'
+                          : 'No saved jobs found',
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        color: AppColors.ink500,
+                        fontSize: 15,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+              )
+            else
+              for (final job in jobs)
+                _JobCardContainer(
+                  job: job,
+                  isSaved: _savedJobIds.contains(job.id),
+                  onToggleSave: () => _toggleSaveJob(job.id),
+                  onTap: () => _showJobDetailModal(job),
+                ),
           ],
         ),
       ),
     );
   }
+}
+
+class _AccountModeCard extends StatelessWidget {
+  const _AccountModeCard({required this.onActivateMode});
+
+  final VoidCallback onActivateMode;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.navy.withValues(alpha: 0.06),
+            blurRadius: 24,
+            offset: const Offset(0, 12),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Account modes',
+            style: TextStyle(
+              color: AppColors.navy,
+              fontWeight: FontWeight.w900,
+              fontSize: 20,
+            ),
+          ),
+          const SizedBox(height: 10),
+          const Text(
+            'Activate both modes if you plan to hire and work on the platform.',
+            style: TextStyle(
+              color: AppColors.ink500,
+              fontWeight: FontWeight.w500,
+              fontSize: 15.5,
+              height: 1.5,
+            ),
+          ),
+          const SizedBox(height: 18),
+          Wrap(
+            spacing: 10,
+            runSpacing: 10,
+            children: const [
+              _ModePill(
+                icon: Icons.check_rounded,
+                label: 'FREELANCER',
+                selected: true,
+              ),
+              _ModePill(label: 'CLIENT', selected: false),
+            ],
+          ),
+          const SizedBox(height: 20),
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final stacked = constraints.maxWidth < 430;
+              final selector = _ModeSelectorButton(onTap: onActivateMode);
+              final activate = _ActivateModeButton(onTap: onActivateMode);
+
+              if (stacked) {
+                return Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [selector, const SizedBox(height: 12), activate],
+                );
+              }
+
+              return Row(
+                children: [
+                  Expanded(child: selector),
+                  const SizedBox(width: 12),
+                  activate,
+                ],
+              );
+            },
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _FindingWorkCard extends StatelessWidget {
+  const _FindingWorkCard({
+    required this.activeTab,
+    required this.savedCount,
+    required this.onTabSelected,
+  });
+
+  final String activeTab;
+  final int savedCount;
+  final ValueChanged<String> onTabSelected;
+
+  @override
+  Widget build(BuildContext context) {
+    final actions = <_WorkAction>[
+      const _WorkAction('Browse jobs', 'Best matches'),
+      const _WorkAction('Most recent', 'Most recent'),
+      _WorkAction('Saved jobs ($savedCount)', 'Saved jobs'),
+      const _WorkAction('My feed', 'My feed'),
+    ];
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(22),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(28),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.navy.withValues(alpha: 0.06),
+            blurRadius: 24,
+            offset: const Offset(0, 12),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: const [
+              Icon(
+                Icons.work_outline_rounded,
+                color: AppColors.green,
+                size: 22,
+              ),
+              SizedBox(width: 8),
+              Text(
+                'Finding work',
+                style: TextStyle(
+                  color: AppColors.navy,
+                  fontWeight: FontWeight.w900,
+                  fontSize: 20,
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 10,
+            runSpacing: 12,
+            children: actions.map((action) {
+              final isActive = activeTab == action.tab;
+              return _WorkActionButton(
+                label: action.label,
+                selected: isActive,
+                onTap: () => onTabSelected(action.tab),
+              );
+            }).toList(),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _JobsSearchFilterBar extends StatelessWidget {
+  const _JobsSearchFilterBar({
+    required this.searchController,
+    required this.searchQuery,
+    required this.onClearSearch,
+    required this.onOpenFilters,
+  });
+
+  final TextEditingController searchController;
+  final String searchQuery;
+  final VoidCallback onClearSearch;
+  final VoidCallback onOpenFilters;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Expanded(
+          child: Container(
+            height: 44,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(10),
+              border: Border.all(color: AppColors.cardBorder),
+            ),
+            child: TextField(
+              controller: searchController,
+              style: const TextStyle(
+                fontSize: 14.5,
+                color: AppColors.navy,
+                fontWeight: FontWeight.w600,
+              ),
+              decoration: InputDecoration(
+                hintText: 'Search for jobs',
+                hintStyle: const TextStyle(
+                  color: AppColors.ink500,
+                  fontSize: 13.5,
+                  fontWeight: FontWeight.w500,
+                ),
+                prefixIcon: const Icon(
+                  Icons.search_rounded,
+                  color: AppColors.ink500,
+                  size: 20,
+                ),
+                suffixIcon: searchQuery.isNotEmpty
+                    ? IconButton(
+                        icon: const Icon(Icons.close_rounded, size: 18),
+                        color: AppColors.ink500,
+                        onPressed: onClearSearch,
+                      )
+                    : null,
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(vertical: 10),
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(width: 10),
+        Container(
+          width: 44,
+          height: 44,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(color: AppColors.cardBorder),
+          ),
+          child: IconButton(
+            icon: const Icon(Icons.tune_rounded, size: 20),
+            color: AppColors.green,
+            tooltip: 'Filter options',
+            onPressed: onOpenFilters,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ModePill extends StatelessWidget {
+  const _ModePill({required this.label, required this.selected, this.icon});
+
+  final String label;
+  final bool selected;
+  final IconData? icon;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 9),
+      decoration: BoxDecoration(
+        color: selected ? AppColors.green100 : AppColors.cream100,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          if (icon != null) ...[
+            Icon(icon, color: AppColors.green, size: 18),
+            const SizedBox(width: 5),
+          ],
+          Text(
+            label,
+            style: TextStyle(
+              color: selected ? AppColors.green : AppColors.ink700,
+              fontWeight: FontWeight.w900,
+              fontSize: 14,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _ModeSelectorButton extends StatelessWidget {
+  const _ModeSelectorButton({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return InkWell(
+      onTap: onTap,
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        height: 56,
+        padding: const EdgeInsets.symmetric(horizontal: 18),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(color: AppColors.green, width: 2),
+        ),
+        child: const Row(
+          children: [
+            Expanded(
+              child: Text(
+                'Freelancer',
+                style: TextStyle(
+                  color: AppColors.ink700,
+                  fontWeight: FontWeight.w800,
+                  fontSize: 17,
+                ),
+              ),
+            ),
+            Icon(Icons.keyboard_arrow_down_rounded, color: AppColors.ink500),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ActivateModeButton extends StatelessWidget {
+  const _ActivateModeButton({required this.onTap});
+
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton(
+      onPressed: onTap,
+      style: OutlinedButton.styleFrom(
+        foregroundColor: AppColors.navy,
+        side: const BorderSide(color: AppColors.border, width: 1.5),
+        minimumSize: const Size(150, 56),
+        padding: const EdgeInsets.symmetric(horizontal: 18),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+      ),
+      child: const Text(
+        'Activate mode',
+        style: TextStyle(
+          color: AppColors.navy,
+          fontWeight: FontWeight.w900,
+          fontSize: 15,
+        ),
+      ),
+    );
+  }
+}
+
+class _WorkActionButton extends StatelessWidget {
+  const _WorkActionButton({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return OutlinedButton(
+      onPressed: onTap,
+      style: OutlinedButton.styleFrom(
+        backgroundColor: selected ? AppColors.green : Colors.white,
+        foregroundColor: selected ? Colors.white : AppColors.navy,
+        side: BorderSide(
+          color: selected ? AppColors.green : AppColors.border,
+          width: 1.5,
+        ),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+      ),
+      child: Text(
+        label,
+        style: TextStyle(
+          fontWeight: FontWeight.w900,
+          fontSize: 15,
+          color: selected ? Colors.white : AppColors.navy,
+        ),
+      ),
+    );
+  }
+}
+
+class _WorkAction {
+  const _WorkAction(this.label, this.tab);
+
+  final String label;
+  final String tab;
 }
 
 class _JobCardContainer extends StatelessWidget {
@@ -780,7 +1143,9 @@ class _JobCardContainer extends StatelessWidget {
                     const SizedBox(width: 8),
                     IconButton(
                       icon: Icon(
-                        isSaved ? Icons.favorite_rounded : Icons.favorite_outline_rounded,
+                        isSaved
+                            ? Icons.favorite_rounded
+                            : Icons.favorite_outline_rounded,
                         color: isSaved ? Colors.red : AppColors.ink500,
                         size: 22,
                       ),
@@ -796,7 +1161,10 @@ class _JobCardContainer extends StatelessWidget {
                 Row(
                   children: [
                     Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.green.withValues(alpha: 0.08),
                         borderRadius: BorderRadius.circular(6),
@@ -842,7 +1210,10 @@ class _JobCardContainer extends StatelessWidget {
                   runSpacing: 6,
                   children: job.skills.take(5).map((skill) {
                     return Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 10,
+                        vertical: 4,
+                      ),
                       decoration: BoxDecoration(
                         color: AppColors.cream50,
                         borderRadius: BorderRadius.circular(12),
@@ -867,22 +1238,32 @@ class _JobCardContainer extends StatelessWidget {
                 Row(
                   children: [
                     Icon(
-                      job.paymentVerified ? Icons.verified_rounded : Icons.gpp_maybe_rounded,
+                      job.paymentVerified
+                          ? Icons.verified_rounded
+                          : Icons.gpp_maybe_rounded,
                       size: 16,
-                      color: job.paymentVerified ? AppColors.green : Colors.amber.shade700,
+                      color: job.paymentVerified
+                          ? AppColors.green
+                          : Colors.amber.shade700,
                     ),
                     const SizedBox(width: 4),
                     Text(
                       job.paymentVerified ? 'Payment verified' : 'Unverified',
                       style: TextStyle(
-                        color: job.paymentVerified ? AppColors.green : Colors.amber.shade800,
+                        color: job.paymentVerified
+                            ? AppColors.green
+                            : Colors.amber.shade800,
                         fontSize: 12,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                     const SizedBox(width: 10),
                     if (job.rating > 0) ...[
-                      const Icon(Icons.star_rounded, size: 15, color: AppColors.saffron),
+                      const Icon(
+                        Icons.star_rounded,
+                        size: 15,
+                        color: AppColors.saffron,
+                      ),
                       const SizedBox(width: 2),
                       Text(
                         job.rating.toStringAsFixed(1),
@@ -1035,7 +1416,13 @@ const List<_JobModel> _mockJobs = [
     budgetInfo: 'Est. Budget: ₹65,000',
     description:
         'We are an early-stage startup looking for a developer to help launch our MVP platform. The project is 80% complete but we need support to squash bugs, refine responsive views, and integrate UPI payment workflows.',
-    skills: ['Flutter', 'Firebase', 'Node.js', 'RESTful API', 'UPI Integration'],
+    skills: [
+      'Flutter',
+      'Firebase',
+      'Node.js',
+      'RESTful API',
+      'UPI Integration',
+    ],
     paymentVerified: true,
     rating: 4.8,
     spent: '₹1.2L+ spent',
@@ -1051,7 +1438,13 @@ const List<_JobModel> _mockJobs = [
     budgetInfo: 'Est. Budget: ₹45,000',
     description:
         'Looking for a seasoned UI/UX Designer to design a 12-screen fintech application. The design should be modern, minimalist, and use a dark theme. Experience with Figma is required. Please share your portfolio.',
-    skills: ['Figma', 'UI/UX Design', 'Mobile App Design', 'Wireframing', 'Prototyping'],
+    skills: [
+      'Figma',
+      'UI/UX Design',
+      'Mobile App Design',
+      'Wireframing',
+      'Prototyping',
+    ],
     paymentVerified: true,
     rating: 5.0,
     spent: '₹4.5L+ spent',
@@ -1067,7 +1460,12 @@ const List<_JobModel> _mockJobs = [
     budgetInfo: 'Est. Budget: ₹15,000',
     description:
         'We need 4 high-quality articles (1,500 words each) covering Web3 security concepts and AI automation. Must have previous technical writing experience and ability to explain complex topics simply.',
-    skills: ['Content Writing', 'Technical Writing', 'Blockchain', 'SEO Optimization'],
+    skills: [
+      'Content Writing',
+      'Technical Writing',
+      'Blockchain',
+      'SEO Optimization',
+    ],
     paymentVerified: true,
     rating: 4.6,
     spent: '₹80k spent',

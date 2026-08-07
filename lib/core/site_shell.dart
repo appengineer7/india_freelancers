@@ -41,7 +41,12 @@ class AppScaffold extends StatelessWidget {
       appBarWidget = AppAppBar(
         showBackButton: showBackButton,
         title: title,
-        showNotification: !['/login', '/register', '/verify', '/forgot-password'].contains(currentRoute),
+        showNotification: ![
+          '/login',
+          '/register',
+          '/verify',
+          '/forgot-password',
+        ].contains(currentRoute),
       );
     }
 
@@ -65,7 +70,7 @@ class JobsAppBar extends StatelessWidget implements PreferredSizeWidget {
   const JobsAppBar({super.key});
 
   @override
-  Size get preferredSize => const Size.fromHeight(56);
+  Size get preferredSize => const Size.fromHeight(72);
 
   @override
   Widget build(BuildContext context) {
@@ -75,53 +80,38 @@ class JobsAppBar extends StatelessWidget implements PreferredSizeWidget {
       scrolledUnderElevation: 0.5,
       surfaceTintColor: Colors.transparent,
       backgroundColor: Colors.white,
-      titleSpacing: 0,
-      leading: Padding(
-        padding: const EdgeInsets.only(left: 16.0),
-        child: Center(
-          child: GestureDetector(
-            onTap: () => Navigator.of(context).pushNamed('/profile'),
-            child: CircleAvatar(
-              radius: 18,
-              backgroundColor: AppColors.navy,
-              child: ClipOval(
-                child: Image.network(
-                  'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&q=80&w=200',
-                  fit: BoxFit.cover,
-                  width: 36,
-                  height: 36,
-                  errorBuilder: (context, error, stackTrace) {
-                    return const Text(
-                      'IF',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w900,
-                      ),
-                    );
-                  },
-                ),
+      titleSpacing: 16,
+      toolbarHeight: 72,
+      title: const BrandLockup(compact: true),
+      actions: [
+        Container(
+          width: 46,
+          height: 46,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(14),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.navy.withValues(alpha: 0.08),
+                blurRadius: 18,
+                offset: const Offset(0, 8),
               ),
-            ),
+            ],
+          ),
+          child: IconButton(
+            icon: const Icon(Icons.notifications_rounded, size: 22),
+            color: AppColors.saffron,
+            tooltip: 'Notifications',
+            onPressed: () => Navigator.of(context).pushNamed('/alerts'),
           ),
         ),
-      ),
-      leadingWidth: 52,
-      title: const Text(
-        'Jobs',
-        style: TextStyle(
-          color: AppColors.navy,
-          fontWeight: FontWeight.w900,
-          fontSize: 22,
-        ),
-      ),
-      actions: [
         IconButton(
-          icon: const Icon(Icons.more_vert_rounded, size: 24),
+          icon: const Icon(Icons.menu_rounded, size: 26),
           color: AppColors.navy,
+          tooltip: 'Menu',
           onPressed: () => _openJobsMenu(context),
         ),
-        const SizedBox(width: 8),
+        const SizedBox(width: 16),
       ],
     );
   }
@@ -429,7 +419,7 @@ void _openJobsMenu(BuildContext context) {
               ),
               const SizedBox(height: 16),
               const Text(
-                'Job Options',
+                'Menu',
                 style: TextStyle(
                   color: AppColors.navy,
                   fontWeight: FontWeight.w900,
@@ -444,7 +434,7 @@ void _openJobsMenu(BuildContext context) {
                   color: AppColors.green,
                 ),
                 title: const Text(
-                  'Job Feed Settings',
+                  'Settings',
                   style: TextStyle(fontWeight: FontWeight.w700),
                 ),
                 onTap: () {
@@ -459,7 +449,7 @@ void _openJobsMenu(BuildContext context) {
                   color: AppColors.green,
                 ),
                 title: const Text(
-                  'View Profile',
+                  'Profile',
                   style: TextStyle(fontWeight: FontWeight.w700),
                 ),
                 onTap: () {

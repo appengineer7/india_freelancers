@@ -88,11 +88,7 @@ class IndiaFreelancersApp extends StatelessWidget {
       routes: {
         '/splash': (_) => const SplashScreen(),
         '/onboarding': (_) => const OnboardingScreen(),
-        '/': (_) => const HomeBinding(
-              child: AuthBinding(
-                child: HomeScreen(),
-              ),
-            ),
+        '/': (_) => const HomeBinding(child: AuthBinding(child: HomeScreen())),
         '/search': (_) => const HomeBinding(child: SearchScreen()),
         '/login': (_) =>
             const HomeBinding(child: AuthBinding(child: LoginScreen())),
@@ -106,10 +102,13 @@ class IndiaFreelancersApp extends StatelessWidget {
             const HomeBinding(child: AuthBinding(child: ProfileScreen())),
         '/settings': (_) =>
             const HomeBinding(child: AuthBinding(child: SettingsScreen())),
-        '/jobs': (_) => const HomeBinding(child: JobsScreen()),
+        '/jobs': (_) =>
+            const HomeBinding(child: AuthBinding(child: JobsScreen())),
         '/proposals': (_) => const HomeBinding(child: ProposalsScreen()),
-        '/contracts': (_) => const HomeBinding(child: ContractsScreen()),
-        '/workroom-timesheet': (_) => const HomeBinding(child: WorkroomTimesheetScreen()),
+        '/contracts': (_) =>
+            const HomeBinding(child: AuthBinding(child: ContractsScreen())),
+        '/workroom-timesheet': (_) =>
+            const HomeBinding(child: WorkroomTimesheetScreen()),
         '/job-search': (_) => const HomeBinding(child: JobSearchScreen()),
         '/messages': (_) => const HomeBinding(child: MessagesScreen()),
         '/alerts': (_) => const HomeBinding(child: AlertsScreen()),

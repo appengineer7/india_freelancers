@@ -13,6 +13,10 @@ class AuthBinding extends StatefulWidget {
     return scope!.controller;
   }
 
+  static AuthController? maybeOf(BuildContext context) {
+    return context.dependOnInheritedWidgetOfExactType<_AuthScope>()?.controller;
+  }
+
   @override
   State<AuthBinding> createState() => _AuthBindingState();
 }
@@ -39,10 +43,8 @@ class _AuthBindingState extends State<AuthBinding> {
 }
 
 class _AuthScope extends InheritedNotifier<AuthController> {
-  const _AuthScope({
-    required this.controller,
-    required super.child,
-  }) : super(notifier: controller);
+  const _AuthScope({required this.controller, required super.child})
+    : super(notifier: controller);
 
   final AuthController controller;
 }

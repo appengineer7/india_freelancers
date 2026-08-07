@@ -21,9 +21,7 @@ class HomeScreen extends StatelessWidget {
       listenable: authController,
       builder: (context, _) {
         if (authController.isLoggedIn) {
-          return const JobsBinding(
-            child: JobsScreen(),
-          );
+          return const JobsBinding(child: JobsScreen());
         }
 
         return const LoginScreen();
@@ -110,7 +108,7 @@ class BrandLockup extends StatelessWidget {
                       style: TextStyle(
                         fontSize: compact ? 17 : 20,
                         fontWeight: FontWeight.w900,
-                        letterSpacing: -0.3,
+                        letterSpacing: 0,
                       ),
                       children: const [
                         TextSpan(
@@ -120,10 +118,6 @@ class BrandLockup extends StatelessWidget {
                         TextSpan(
                           text: 'Freelancers',
                           style: TextStyle(color: AppColors.navy),
-                        ),
-                        TextSpan(
-                          text: '.com',
-                          style: TextStyle(color: AppColors.saffron),
                         ),
                       ],
                     ),
@@ -146,8 +140,6 @@ class BrandLockup extends StatelessWidget {
     );
   }
 }
-
-
 
 class HomeSearchBar extends StatelessWidget {
   const HomeSearchBar({super.key});
@@ -364,8 +356,6 @@ class AppStatsBar extends StatelessWidget {
     );
   }
 }
-
-
 
 class _HeroVisualPainter extends CustomPainter {
   @override
