@@ -1,0 +1,3 @@
+class ContractsModel {
+  const ContractsModel();
+}
