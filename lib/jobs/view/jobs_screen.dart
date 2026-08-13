@@ -1,21 +1,24 @@
 import 'package:flutter/material.dart';
 
-import '../../auth/bindings/auth_binding.dart';
 import '../../core/site_shell.dart';
 import '../../home/view/home_screen.dart';
 import '../bindings/jobs_binding.dart';
 
 class JobsScreen extends StatelessWidget {
-  const JobsScreen({super.key});
+  const JobsScreen({super.key, this.currentRoute = '/jobs'});
+
+  final String currentRoute;
 
   @override
   Widget build(BuildContext context) {
-    return const JobsBinding(child: _JobsFeedView());
+    return JobsBinding(child: _JobsFeedView(currentRoute: currentRoute));
   }
 }
 
 class _JobsFeedView extends StatefulWidget {
-  const _JobsFeedView();
+  const _JobsFeedView({required this.currentRoute});
+
+  final String currentRoute;
 
   @override
   State<_JobsFeedView> createState() => _JobsFeedViewState();
@@ -114,74 +117,76 @@ class _JobsFeedViewState extends State<_JobsFeedView> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) {
-        return StatefulBuilder(
-          builder: (context, setSheetState) {
-            return Padding(
-              padding: EdgeInsets.only(
-                bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-                top: 16,
-                left: 20,
-                right: 20,
-              ),
-              child: Column(
-                mainAxisSize: MainAxisSize.min,
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  Center(
-                    child: Container(
-                      width: 38,
-                      height: 4,
-                      decoration: BoxDecoration(
-                        color: Colors.grey.shade300,
-                        borderRadius: BorderRadius.circular(2),
-                      ),
-                    ),
+        return FractionallySizedBox(
+          heightFactor: 0.55,
+          child: StatefulBuilder(
+            builder: (context, setSheetState) {
+              return SingleChildScrollView(
+                child: Padding(
+                  padding: EdgeInsets.only(
+                    bottom: MediaQuery.of(context).viewInsets.bottom + 20,
+                    top: 16,
+                    left: 20,
+                    right: 20,
                   ),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
                     children: [
-                      const Text(
-                        'Filter Jobs',
-                        style: TextStyle(
-                          color: AppColors.navy,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 20,
-                        ),
-                      ),
-                      TextButton(
-                        onPressed: () {
-                          setSheetState(() {
-                            _selectedCategory = 'All';
-                            _selectedType = 'Any';
-                          });
-                          setState(() {});
-                        },
-                        child: const Text(
-                          'Clear All',
-                          style: TextStyle(
-                            color: AppColors.green,
-                            fontWeight: FontWeight.bold,
+                      Center(
+                        child: Container(
+                          width: 38,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: Colors.grey.shade300,
+                            borderRadius: BorderRadius.circular(2),
                           ),
                         ),
                       ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  const Text(
-                    'Category',
-                    style: TextStyle(
-                      color: AppColors.navy,
-                      fontWeight: FontWeight.w800,
-                      fontSize: 15,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Wrap(
-                    spacing: 8,
-                    runSpacing: 8,
-                    children:
-                        [
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            'Filter Jobs',
+                            style: TextStyle(
+                              color: AppColors.navy,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 20,
+                            ),
+                          ),
+                          TextButton(
+                            onPressed: () {
+                              setSheetState(() {
+                                _selectedCategory = 'All';
+                                _selectedType = 'Any';
+                              });
+                              setState(() {});
+                            },
+                            child: const Text(
+                              'Clear All',
+                              style: TextStyle(
+                                color: AppColors.green,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Category',
+                        style: TextStyle(
+                          color: AppColors.navy,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 15,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Wrap(
+                        spacing: 8,
+                        runSpacing: 8,
+                        children: [
                           'All',
                           'Development & IT',
                           'Design & Creative',
@@ -215,74 +220,77 @@ class _JobsFeedViewState extends State<_JobsFeedView> {
                             },
                           );
                         }).toList(),
-                  ),
-                  const SizedBox(height: 20),
-                  const Text(
-                    'Job Type',
-                    style: TextStyle(
-                      color: AppColors.navy,
-                      fontWeight: FontWeight.w800,
-                      fontSize: 15,
-                    ),
-                  ),
-                  const SizedBox(height: 10),
-                  Row(
-                    children: ['Any', 'Fixed price', 'Hourly'].map((type) {
-                      final isSelected = _selectedType == type;
-                      return Padding(
-                        padding: const EdgeInsets.only(right: 10),
-                        child: ChoiceChip(
-                          label: Text(type),
-                          selected: isSelected,
-                          selectedColor: AppColors.saffron100,
-                          backgroundColor: AppColors.cream50,
-                          labelStyle: TextStyle(
-                            color: isSelected
-                                ? AppColors.saffron700
-                                : AppColors.navy,
-                            fontWeight: isSelected
-                                ? FontWeight.w800
-                                : FontWeight.w600,
-                            fontSize: 13,
-                          ),
-                          side: BorderSide(
-                            color: isSelected
-                                ? AppColors.saffron
-                                : AppColors.cardBorder,
-                          ),
-                          onSelected: (val) {
-                            if (val) {
-                              setSheetState(() => _selectedType = type);
-                              setState(() {});
-                            }
-                          },
+                      ),
+                      const SizedBox(height: 20),
+                      const Text(
+                        'Job Type',
+                        style: TextStyle(
+                          color: AppColors.navy,
+                          fontWeight: FontWeight.w800,
+                          fontSize: 15,
                         ),
-                      );
-                    }).toList(),
-                  ),
-                  const SizedBox(height: 24),
-                  ElevatedButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: AppColors.saffron,
-                      padding: const EdgeInsets.symmetric(vertical: 14),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(10),
                       ),
-                    ),
-                    child: const Text(
-                      'Apply Filters',
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w800,
-                        fontSize: 15,
+                      const SizedBox(height: 10),
+                      Row(
+                        children: ['Any', 'Fixed price', 'Hourly']
+                            .map((type) {
+                          final isSelected = _selectedType == type;
+                          return Padding(
+                            padding: const EdgeInsets.only(right: 10),
+                            child: ChoiceChip(
+                              label: Text(type),
+                              selected: isSelected,
+                              selectedColor: AppColors.saffron100,
+                              backgroundColor: AppColors.cream50,
+                              labelStyle: TextStyle(
+                                color: isSelected
+                                    ? AppColors.saffron700
+                                    : AppColors.navy,
+                                fontWeight: isSelected
+                                    ? FontWeight.w800
+                                    : FontWeight.w600,
+                                fontSize: 13,
+                              ),
+                              side: BorderSide(
+                                color: isSelected
+                                    ? AppColors.saffron
+                                    : AppColors.cardBorder,
+                              ),
+                              onSelected: (val) {
+                                if (val) {
+                                  setSheetState(() => _selectedType = type);
+                                  setState(() {});
+                                }
+                              },
+                            ),
+                          );
+                        }).toList(),
                       ),
-                    ),
+                      const SizedBox(height: 24),
+                      ElevatedButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.saffron,
+                          padding: const EdgeInsets.symmetric(vertical: 14),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                        ),
+                        child: const Text(
+                          'Apply Filters',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w800,
+                            fontSize: 15,
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-            );
-          },
+                ),
+              );
+            },
+          ),
         );
       },
     );
@@ -569,40 +577,14 @@ class _JobsFeedViewState extends State<_JobsFeedView> {
   @override
   Widget build(BuildContext context) {
     final jobs = _filteredJobs;
-    final displayName = AuthBinding.maybeOf(context)?.displayName.trim();
-    final welcomeName = displayName == null || displayName.isEmpty
-        ? 'nisha'
-        : displayName;
 
     return AppScaffold(
-      currentRoute: '/jobs',
+      currentRoute: widget.currentRoute,
       body: Container(
-        color: AppColors.cream100,
+        color: Colors.white,
         child: ListView(
-          padding: const EdgeInsets.fromLTRB(20, 24, 20, 80),
+          padding: const EdgeInsets.fromLTRB(20, 18, 20, 92),
           children: [
-            Text(
-              'Welcome back, $welcomeName',
-              maxLines: 1,
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                color: AppColors.navy,
-                fontWeight: FontWeight.w900,
-                fontSize: 15,
-                height: 1.25,
-              ),
-            ),
-            const SizedBox(height: 8),
-            const Text(
-              'Here is a quick way into the tools for your active account mode.',
-              style: TextStyle(
-                color: AppColors.ink500,
-                fontWeight: FontWeight.w500,
-                fontSize: 17,
-                height: 1.5,
-              ),
-            ),
-            const SizedBox(height: 18),
             _JobsSearchFilterBar(
               searchController: _searchController,
               searchQuery: _searchQuery,
@@ -610,9 +592,9 @@ class _JobsFeedViewState extends State<_JobsFeedView> {
               onOpenFilters: _openFiltersSheet,
             ),
             if (_searchQuery.isEmpty) ...[
-              const SizedBox(height: 22),
+              const SizedBox(height: 24),
               _AccountModeCard(onActivateMode: _openFiltersSheet),
-              const SizedBox(height: 18),
+              const SizedBox(height: 24),
               _FindingWorkCard(
                 activeTab: _activeTab,
                 savedCount: _savedJobIds.length,
@@ -623,7 +605,7 @@ class _JobsFeedViewState extends State<_JobsFeedView> {
                 },
               ),
             ],
-            const SizedBox(height: 18),
+            const SizedBox(height: 26),
             Row(
               children: [
                 const Expanded(
@@ -639,9 +621,9 @@ class _JobsFeedViewState extends State<_JobsFeedView> {
                 Text(
                   '${jobs.length} found',
                   style: const TextStyle(
-                    color: AppColors.ink500,
+                    color: AppColors.green,
                     fontWeight: FontWeight.w700,
-                    fontSize: 13,
+                    fontSize: 16,
                   ),
                 ),
               ],
@@ -696,10 +678,15 @@ class _AccountModeCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       width: double.infinity,
-      padding: const EdgeInsets.all(22),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        gradient: const LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+          colors: [Colors.white, Color(0xfff2fbf7)],
+        ),
         borderRadius: BorderRadius.circular(28),
+        border: Border.all(color: AppColors.cardBorder),
         boxShadow: [
           BoxShadow(
             color: AppColors.navy.withValues(alpha: 0.06),
@@ -711,23 +698,37 @@ class _AccountModeCard extends StatelessWidget {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Text(
-            'Account modes',
-            style: TextStyle(
-              color: AppColors.navy,
-              fontWeight: FontWeight.w900,
-              fontSize: 20,
-            ),
-          ),
-          const SizedBox(height: 10),
-          const Text(
-            'Activate both modes if you plan to hire and work on the platform.',
-            style: TextStyle(
-              color: AppColors.ink500,
-              fontWeight: FontWeight.w500,
-              fontSize: 15.5,
-              height: 1.5,
-            ),
+          Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Account modes',
+                      style: TextStyle(
+                        color: AppColors.navy,
+                        fontWeight: FontWeight.w900,
+                        fontSize: 24,
+                      ),
+                    ),
+                    SizedBox(height: 14),
+                    Text(
+                      'Activate both modes if you plan to hire and work on the platform.',
+                      style: TextStyle(
+                        color: AppColors.ink500,
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                        height: 1.55,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(width: 12),
+              const _AccountModeIllustration(),
+            ],
           ),
           const SizedBox(height: 18),
           Wrap(
@@ -742,28 +743,100 @@ class _AccountModeCard extends StatelessWidget {
               _ModePill(label: 'CLIENT', selected: false),
             ],
           ),
-          const SizedBox(height: 20),
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final stacked = constraints.maxWidth < 430;
-              final selector = _ModeSelectorButton(onTap: onActivateMode);
-              final activate = _ActivateModeButton(onTap: onActivateMode);
+          const SizedBox(height: 22),
+          _ModeSelectorButton(onTap: onActivateMode),
+          const SizedBox(height: 12),
+          _ActivateModeButton(onTap: onActivateMode),
+        ],
+      ),
+    );
+  }
+}
 
-              if (stacked) {
-                return Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [selector, const SizedBox(height: 12), activate],
-                );
-              }
+class _AccountModeIllustration extends StatelessWidget {
+  const _AccountModeIllustration();
 
-              return Row(
-                children: [
-                  Expanded(child: selector),
-                  const SizedBox(width: 12),
-                  activate,
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 118,
+      height: 120,
+      child: Stack(
+        alignment: Alignment.center,
+        children: [
+          Positioned(
+            bottom: 16,
+            child: Container(
+              width: 96,
+              height: 18,
+              decoration: BoxDecoration(
+                color: AppColors.green.withValues(alpha: 0.08),
+                borderRadius: BorderRadius.circular(999),
+              ),
+            ),
+          ),
+          Positioned(
+            top: 16,
+            child: Container(
+              width: 82,
+              height: 92,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(10),
+                border: Border.all(color: AppColors.green200),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.green.withValues(alpha: 0.08),
+                    blurRadius: 16,
+                    offset: const Offset(0, 8),
+                  ),
                 ],
-              );
-            },
+              ),
+              child: Column(
+                children: [
+                  Container(
+                    height: 10,
+                    decoration: const BoxDecoration(
+                      color: Color(0xff5bc59b),
+                      borderRadius: BorderRadius.vertical(
+                        top: Radius.circular(9),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  CircleAvatar(
+                    radius: 17,
+                    backgroundColor: const Color(0xffd7eaff),
+                    child: Icon(
+                      Icons.person_rounded,
+                      size: 25,
+                      color: Colors.blue.shade500,
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  Container(width: 48, height: 5, color: AppColors.green200),
+                  const SizedBox(height: 7),
+                  Container(width: 36, height: 5, color: AppColors.green200),
+                ],
+              ),
+            ),
+          ),
+          Positioned(
+            right: 0,
+            bottom: 12,
+            child: Container(
+              width: 54,
+              height: 54,
+              decoration: const BoxDecoration(
+                color: AppColors.green,
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.check_rounded,
+                color: Colors.white,
+                size: 32,
+              ),
+            ),
           ),
         ],
       ),
@@ -785,10 +858,34 @@ class _FindingWorkCard extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final actions = <_WorkAction>[
-      const _WorkAction('Browse jobs', 'Best matches'),
-      const _WorkAction('Most recent', 'Most recent'),
-      _WorkAction('Saved jobs ($savedCount)', 'Saved jobs'),
-      const _WorkAction('My feed', 'My feed'),
+      const _WorkAction(
+        'Browse jobs',
+        'Best matches',
+        Icons.apartment_rounded,
+        AppColors.green,
+        Color(0xffedf9f1),
+      ),
+      const _WorkAction(
+        'Most recent',
+        'Most recent',
+        Icons.schedule_rounded,
+        Color(0xff1976d2),
+        Color(0xffeef6ff),
+      ),
+      _WorkAction(
+        'Saved jobs ($savedCount)',
+        'Saved jobs',
+        Icons.bookmark_border_rounded,
+        AppColors.saffron,
+        const Color(0xfffff4ec),
+      ),
+      const _WorkAction(
+        'My feed',
+        'My feed',
+        Icons.star_border_rounded,
+        Color(0xff7b4bd8),
+        Color(0xfff5efff),
+      ),
     ];
 
     return Container(
@@ -827,14 +924,17 @@ class _FindingWorkCard extends StatelessWidget {
             ],
           ),
           const SizedBox(height: 16),
-          Wrap(
-            spacing: 10,
-            runSpacing: 12,
+          GridView.count(
+            crossAxisCount: 2,
+            shrinkWrap: true,
+            physics: const NeverScrollableScrollPhysics(),
+            mainAxisSpacing: 12,
+            crossAxisSpacing: 12,
+            childAspectRatio: 2.6,
             children: actions.map((action) {
-              final isActive = activeTab == action.tab;
               return _WorkActionButton(
-                label: action.label,
-                selected: isActive,
+                action: action,
+                selected: activeTab == action.tab,
                 onTap: () => onTabSelected(action.tab),
               );
             }).toList(),
@@ -864,11 +964,20 @@ class _JobsSearchFilterBar extends StatelessWidget {
       children: [
         Expanded(
           child: Container(
-            height: 44,
+            height: 50,
             decoration: BoxDecoration(
               color: Colors.white,
-              borderRadius: BorderRadius.circular(10),
-              border: Border.all(color: AppColors.cardBorder),
+              borderRadius: BorderRadius.circular(15),
+              border: Border.all(
+                color: AppColors.border.withValues(alpha: 0.8),
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.navy.withValues(alpha: 0.04),
+                  blurRadius: 16,
+                  offset: const Offset(0, 8),
+                ),
+              ],
             ),
             child: TextField(
               controller: searchController,
@@ -880,14 +989,14 @@ class _JobsSearchFilterBar extends StatelessWidget {
               decoration: InputDecoration(
                 hintText: 'Search for jobs',
                 hintStyle: const TextStyle(
-                  color: AppColors.ink500,
-                  fontSize: 13.5,
-                  fontWeight: FontWeight.w500,
+                  color: AppColors.ink300,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
                 ),
                 prefixIcon: const Icon(
                   Icons.search_rounded,
                   color: AppColors.ink500,
-                  size: 20,
+                  size: 25,
                 ),
                 suffixIcon: searchQuery.isNotEmpty
                     ? IconButton(
@@ -904,12 +1013,19 @@ class _JobsSearchFilterBar extends StatelessWidget {
         ),
         const SizedBox(width: 10),
         Container(
-          width: 44,
-          height: 44,
+          width: 50,
+          height: 50,
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(10),
-            border: Border.all(color: AppColors.cardBorder),
+            borderRadius: BorderRadius.circular(15),
+            border: Border.all(color: AppColors.border.withValues(alpha: 0.8)),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.navy.withValues(alpha: 0.04),
+                blurRadius: 16,
+                offset: const Offset(0, 8),
+              ),
+            ],
           ),
           child: IconButton(
             icon: const Icon(Icons.tune_rounded, size: 20),
@@ -970,15 +1086,25 @@ class _ModeSelectorButton extends StatelessWidget {
       onTap: onTap,
       borderRadius: BorderRadius.circular(14),
       child: Container(
-        height: 56,
+        height: 58,
         padding: const EdgeInsets.symmetric(horizontal: 18),
         decoration: BoxDecoration(
           color: Colors.white,
           borderRadius: BorderRadius.circular(14),
-          border: Border.all(color: AppColors.green, width: 2),
+          border: Border.all(color: AppColors.green, width: 1.5),
         ),
         child: const Row(
           children: [
+            CircleAvatar(
+              radius: 19,
+              backgroundColor: AppColors.green100,
+              child: Icon(
+                Icons.person_outline_rounded,
+                color: AppColors.green,
+                size: 24,
+              ),
+            ),
+            SizedBox(width: 14),
             Expanded(
               child: Text(
                 'Freelancer',
@@ -1007,18 +1133,20 @@ class _ActivateModeButton extends StatelessWidget {
     return OutlinedButton(
       onPressed: onTap,
       style: OutlinedButton.styleFrom(
-        foregroundColor: AppColors.navy,
-        side: const BorderSide(color: AppColors.border, width: 1.5),
-        minimumSize: const Size(150, 56),
+        backgroundColor: AppColors.green,
+        foregroundColor: Colors.white,
+        side: BorderSide.none,
+        minimumSize: const Size(double.infinity, 58),
         padding: const EdgeInsets.symmetric(horizontal: 18),
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        elevation: 0,
       ),
       child: const Text(
         'Activate mode',
         style: TextStyle(
-          color: AppColors.navy,
+          color: Colors.white,
           fontWeight: FontWeight.w900,
-          fontSize: 15,
+          fontSize: 17,
         ),
       ),
     );
@@ -1027,35 +1155,59 @@ class _ActivateModeButton extends StatelessWidget {
 
 class _WorkActionButton extends StatelessWidget {
   const _WorkActionButton({
-    required this.label,
+    required this.action,
     required this.selected,
     required this.onTap,
   });
 
-  final String label;
+  final _WorkAction action;
   final bool selected;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    return OutlinedButton(
-      onPressed: onTap,
-      style: OutlinedButton.styleFrom(
-        backgroundColor: selected ? AppColors.green : Colors.white,
-        foregroundColor: selected ? Colors.white : AppColors.navy,
-        side: BorderSide(
-          color: selected ? AppColors.green : AppColors.border,
-          width: 1.5,
-        ),
-        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 14),
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-      ),
-      child: Text(
-        label,
-        style: TextStyle(
-          fontWeight: FontWeight.w900,
-          fontSize: 15,
-          color: selected ? Colors.white : AppColors.navy,
+    final color = action.color;
+    return Material(
+      color: Colors.transparent,
+      borderRadius: BorderRadius.circular(14),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(14),
+        child: AnimatedContainer(
+          duration: const Duration(milliseconds: 160),
+          padding: const EdgeInsets.symmetric(horizontal: 10),
+          decoration: BoxDecoration(
+            color: action.tint,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: selected
+                  ? color.withValues(alpha: 0.34)
+                  : AppColors.cardBorder,
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(action.icon, color: color, size: 25),
+              const SizedBox(width: 8),
+              Expanded(
+                child: FittedBox(
+                  fit: BoxFit.scaleDown,
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    action.label,
+                    maxLines: 1,
+                    style: TextStyle(
+                      fontWeight: FontWeight.w900,
+                      fontSize: 14.5,
+                      color: color,
+                    ),
+                  ),
+                ),
+              ),
+              const SizedBox(width: 6),
+              Icon(Icons.chevron_right_rounded, color: color, size: 22),
+            ],
+          ),
         ),
       ),
     );
@@ -1063,10 +1215,13 @@ class _WorkActionButton extends StatelessWidget {
 }
 
 class _WorkAction {
-  const _WorkAction(this.label, this.tab);
+  const _WorkAction(this.label, this.tab, this.icon, this.color, this.tint);
 
   final String label;
   final String tab;
+  final IconData icon;
+  final Color color;
+  final Color tint;
 }
 
 class _JobCardContainer extends StatelessWidget {
@@ -1085,27 +1240,27 @@ class _JobCardContainer extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 14),
+      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(color: AppColors.cardBorder),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.03),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
+            color: AppColors.navy.withValues(alpha: 0.06),
+            blurRadius: 24,
+            offset: const Offset(0, 12),
           ),
         ],
       ),
       child: Material(
         color: Colors.transparent,
-        borderRadius: BorderRadius.circular(12),
+        borderRadius: BorderRadius.circular(24),
         child: InkWell(
           onTap: onTap,
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(24),
           child: Padding(
-            padding: const EdgeInsets.all(18),
+            padding: const EdgeInsets.all(20),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -1141,17 +1296,31 @@ class _JobCardContainer extends StatelessWidget {
                       ),
                     ),
                     const SizedBox(width: 8),
-                    IconButton(
-                      icon: Icon(
-                        isSaved
-                            ? Icons.favorite_rounded
-                            : Icons.favorite_outline_rounded,
-                        color: isSaved ? Colors.red : AppColors.ink500,
-                        size: 22,
+                    Container(
+                      width: 46,
+                      height: 46,
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.navy.withValues(alpha: 0.08),
+                            blurRadius: 16,
+                            offset: const Offset(0, 8),
+                          ),
+                        ],
                       ),
-                      padding: EdgeInsets.zero,
-                      constraints: const BoxConstraints(),
-                      onPressed: onToggleSave,
+                      child: IconButton(
+                        icon: Icon(
+                          isSaved
+                              ? Icons.favorite_rounded
+                              : Icons.favorite_outline_rounded,
+                          color: isSaved ? Colors.red : AppColors.ink500,
+                          size: 25,
+                        ),
+                        padding: EdgeInsets.zero,
+                        onPressed: onToggleSave,
+                      ),
                     ),
                   ],
                 ),

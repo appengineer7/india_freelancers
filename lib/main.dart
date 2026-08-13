@@ -1,17 +1,16 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 
-import 'alerts/view/alerts_screen.dart';
 import 'auth/bindings/auth_binding.dart';
 import 'auth/view/auth_screen.dart';
 import 'auth/view/profile_screen.dart';
 import 'auth/view/settings_screen.dart';
-import 'contracts/view/contracts_screen.dart';
+import 'dashboard/models/dashboard_page_model.dart';
+import 'dashboard/view/dashboard_screen.dart';
 import 'home/bindings/home_binding.dart';
 import 'home/view/home_screen.dart';
 import 'home/view/search_screen.dart';
 import 'jobs/view/jobs_screen.dart';
-import 'messages/view/messages_screen.dart';
 import 'onboarding/onboarding_screen.dart';
 import 'onboarding/splash_screen.dart';
 import 'pages/info_pages.dart'
@@ -21,7 +20,6 @@ import 'pages/info_pages.dart'
         JobsScreen,
         MessagesScreen,
         ProposalsScreen;
-import 'proposals/view/proposals_screen.dart';
 import 'contracts/view/workroom_timesheet_screen.dart';
 import 'jobs/view/job_search_screen.dart';
 
@@ -47,6 +45,15 @@ class IndiaFreelancersApp extends StatelessWidget {
           secondary: AppColors.green,
           tertiary: AppColors.navy,
           surface: AppColors.cream50,
+        ),
+        pageTransitionsTheme: const PageTransitionsTheme(
+          builders: {
+            TargetPlatform.android: _NoPageTransitionsBuilder(),
+            TargetPlatform.iOS: _NoPageTransitionsBuilder(),
+            TargetPlatform.macOS: _NoPageTransitionsBuilder(),
+            TargetPlatform.windows: _NoPageTransitionsBuilder(),
+            TargetPlatform.linux: _NoPageTransitionsBuilder(),
+          },
         ),
         scaffoldBackgroundColor: AppColors.cream50,
         elevatedButtonTheme: ElevatedButtonThemeData(
@@ -102,16 +109,103 @@ class IndiaFreelancersApp extends StatelessWidget {
             const HomeBinding(child: AuthBinding(child: ProfileScreen())),
         '/settings': (_) =>
             const HomeBinding(child: AuthBinding(child: SettingsScreen())),
-        '/jobs': (_) =>
-            const HomeBinding(child: AuthBinding(child: JobsScreen())),
-        '/proposals': (_) => const HomeBinding(child: ProposalsScreen()),
-        '/contracts': (_) =>
-            const HomeBinding(child: AuthBinding(child: ContractsScreen())),
+        '/overview': (_) => const HomeBinding(
+          child: AuthBinding(child: JobsScreen(currentRoute: '/overview')),
+        ),
+        '/jobs': (_) => HomeBinding(
+          child: AuthBinding(
+            child: DashboardScreen(
+              page: DashboardPages.byKind(DashboardPageKind.myJobs),
+            ),
+          ),
+        ),
+        '/post-job': (_) => HomeBinding(
+          child: AuthBinding(
+            child: DashboardScreen(
+              page: DashboardPages.byKind(DashboardPageKind.postJob),
+            ),
+          ),
+        ),
+        '/proposals': (_) => HomeBinding(
+          child: AuthBinding(
+            child: DashboardScreen(
+              page: DashboardPages.byKind(DashboardPageKind.myProposals),
+            ),
+          ),
+        ),
+        '/invitations': (_) => HomeBinding(
+          child: AuthBinding(
+            child: DashboardScreen(
+              page: DashboardPages.byKind(DashboardPageKind.invitations),
+            ),
+          ),
+        ),
+        '/offers-received': (_) => HomeBinding(
+          child: AuthBinding(
+            child: DashboardScreen(
+              page: DashboardPages.byKind(DashboardPageKind.offersReceived),
+            ),
+          ),
+        ),
+        '/offers-sent': (_) => HomeBinding(
+          child: AuthBinding(
+            child: DashboardScreen(
+              page: DashboardPages.byKind(DashboardPageKind.offersSent),
+            ),
+          ),
+        ),
+        '/contracts': (_) => HomeBinding(
+          child: AuthBinding(
+            child: DashboardScreen(
+              page: DashboardPages.byKind(DashboardPageKind.contracts),
+            ),
+          ),
+        ),
         '/workroom-timesheet': (_) =>
             const HomeBinding(child: WorkroomTimesheetScreen()),
         '/job-search': (_) => const HomeBinding(child: JobSearchScreen()),
-        '/messages': (_) => const HomeBinding(child: MessagesScreen()),
-        '/alerts': (_) => const HomeBinding(child: AlertsScreen()),
+        '/payouts': (_) => HomeBinding(
+          child: AuthBinding(
+            child: DashboardScreen(
+              page: DashboardPages.byKind(DashboardPageKind.payouts),
+            ),
+          ),
+        ),
+        '/messages': (_) => HomeBinding(
+          child: AuthBinding(
+            child: DashboardScreen(
+              page: DashboardPages.byKind(DashboardPageKind.messages),
+            ),
+          ),
+        ),
+        '/alerts': (_) => HomeBinding(
+          child: AuthBinding(
+            child: DashboardScreen(
+              page: DashboardPages.byKind(DashboardPageKind.notifications),
+            ),
+          ),
+        ),
+        '/freelancer-profile': (_) => HomeBinding(
+          child: AuthBinding(
+            child: DashboardScreen(
+              page: DashboardPages.byKind(DashboardPageKind.freelancerProfile),
+            ),
+          ),
+        ),
+        '/client-profile': (_) => HomeBinding(
+          child: AuthBinding(
+            child: DashboardScreen(
+              page: DashboardPages.byKind(DashboardPageKind.clientProfile),
+            ),
+          ),
+        ),
+        '/security-sessions': (_) => HomeBinding(
+          child: AuthBinding(
+            child: DashboardScreen(
+              page: DashboardPages.byKind(DashboardPageKind.securitySessions),
+            ),
+          ),
+        ),
         '/how-it-works': (_) => const HomeBinding(child: HowItWorksScreen()),
         '/pricing': (_) => const HomeBinding(child: PricingScreen()),
         '/trust': (_) => const HomeBinding(child: TrustScreen()),
@@ -130,4 +224,19 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) => const IndiaFreelancersApp();
+}
+
+class _NoPageTransitionsBuilder extends PageTransitionsBuilder {
+  const _NoPageTransitionsBuilder();
+
+  @override
+  Widget buildTransitions<T>(
+    PageRoute<T> route,
+    BuildContext context,
+    Animation<double> animation,
+    Animation<double> secondaryAnimation,
+    Widget child,
+  ) {
+    return child;
+  }
 }

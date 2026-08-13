@@ -842,15 +842,18 @@ class _JobsScreenState extends State<JobsScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) {
-        return StatefulBuilder(
-          builder: (context, setSheetState) {
-            return SafeArea(
-              child: Padding(
-                padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-                child: Column(
-                  mainAxisSize: MainAxisSize.min,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
+        return FractionallySizedBox(
+          heightFactor: 0.55,
+          child: StatefulBuilder(
+            builder: (context, setSheetState) {
+              return SingleChildScrollView(
+                child: SafeArea(
+                  child: Padding(
+                    padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      crossAxisAlignment: CrossAxisAlignment.stretch,
+                      children: [
                     Center(
                       child: Container(
                         width: 40,
@@ -943,10 +946,13 @@ class _JobsScreenState extends State<JobsScreen> {
                         ]) ...[
                           Row(
                             children: [
+                              // ignore: deprecated_member_use
                               Radio<String>(
                                 value: type,
+                                // ignore: deprecated_member_use
                                 groupValue: _selectedType,
                                 activeColor: AppColors.saffron,
+                                // ignore: deprecated_member_use
                                 onChanged: (val) {
                                   if (val != null) {
                                     setSheetState(() {
@@ -984,8 +990,10 @@ class _JobsScreenState extends State<JobsScreen> {
                   ],
                 ),
               ),
+                )
             );
           },
+          )
         );
       },
     );
@@ -1019,7 +1027,8 @@ class _JobsScreenState extends State<JobsScreen> {
                           ),
                           child: TextField(
                             readOnly: true,
-                            onTap: () => Navigator.of(context).pushNamed('/job-search'),
+                            onTap: () =>
+                                Navigator.of(context).pushNamed('/job-search'),
                             decoration: const InputDecoration(
                               hintText: 'Search for jobs',
                               hintStyle: TextStyle(
@@ -2396,7 +2405,9 @@ class _ContractsScreenState extends State<ContractsScreen> {
                     children: [
                       Expanded(
                         child: GestureDetector(
-                          onTap: () => Navigator.of(context).pushNamed('/workroom-timesheet'),
+                          onTap: () => Navigator.of(
+                            context,
+                          ).pushNamed('/workroom-timesheet'),
                           child: const Text(
                             'Native Mobile SDK for iOS and Android',
                             style: TextStyle(
@@ -2501,7 +2512,9 @@ class _ContractsScreenState extends State<ContractsScreen> {
                           borderRadius: BorderRadius.circular(20),
                         ),
                       ),
-                      onPressed: () => Navigator.of(context).pushNamed('/workroom-timesheet'),
+                      onPressed: () => Navigator.of(
+                        context,
+                      ).pushNamed('/workroom-timesheet'),
                       child: const Text(
                         'See timesheet',
                         style: TextStyle(

@@ -113,21 +113,33 @@ class _SearchScreenState extends State<SearchScreen> {
                 fontWeight: FontWeight.w600,
                 fontSize: 14,
               ),
-              decoration: const InputDecoration(
+              decoration: InputDecoration(
                 hintText: 'Search "React developer", skills...',
-                hintStyle: TextStyle(
+                hintStyle: const TextStyle(
                   color: AppColors.ink300,
                   fontWeight: FontWeight.w500,
                   fontSize: 14,
                 ),
                 border: InputBorder.none,
                 isDense: true,
-                contentPadding: EdgeInsets.symmetric(vertical: 10),
-                suffixIcon: Icon(
-                  Icons.search_rounded,
-                  color: AppColors.ink500,
-                  size: 20,
-                ),
+                contentPadding: const EdgeInsets.symmetric(vertical: 10),
+                suffixIcon: _queryController.text.isEmpty
+                    ? const Icon(
+                        Icons.search_rounded,
+                        color: AppColors.ink500,
+                        size: 20,
+                      )
+                    : GestureDetector(
+                        onTap: () {
+                          _queryController.clear();
+                          setState(() {});
+                        },
+                        child: const Icon(
+                          Icons.close_rounded,
+                          color: AppColors.ink500,
+                          size: 20,
+                        ),
+                      ),
               ),
               onChanged: (_) => setState(() {}),
             ),
@@ -234,62 +246,71 @@ class _SearchScreenState extends State<SearchScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: AppColors.border,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 16),
-                const Text(
-                  'Category',
-                  style: TextStyle(
-                    color: AppColors.navy,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 18,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Flexible(
-                  child: ListView(
-                    shrinkWrap: true,
+        return FractionallySizedBox(
+          heightFactor: 0.55,
+          child: Material(
+            color: Colors.white,
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      for (final option in [
-                        'All categories',
-                        ...categories.map((c) => c.title),
-                      ])
-                        ListTile(
-                          contentPadding: EdgeInsets.zero,
-                          leading: Icon(
-                            _selectedCategory == option
-                                ? Icons.radio_button_checked_rounded
-                                : Icons.radio_button_off_rounded,
-                            color: AppColors.green,
+                      Center(
+                        child: Container(
+                          width: 40,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: AppColors.border,
+                            borderRadius: BorderRadius.circular(2),
                           ),
-                          title: Text(
-                            option,
-                            style: const TextStyle(fontWeight: FontWeight.w600),
-                          ),
-                          onTap: () {
-                            setState(() => _selectedCategory = option);
-                            Navigator.pop(ctx);
-                          },
                         ),
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Category',
+                        style: TextStyle(
+                          color: AppColors.navy,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 18,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Flexible(
+                        child: ListView(
+                          shrinkWrap: true,
+                          children: [
+                            for (final option in [
+                              'All categories',
+                              ...categories.map((c) => c.title),
+                            ])
+                              ListTile(
+                                contentPadding: EdgeInsets.zero,
+                                leading: Icon(
+                                  _selectedCategory == option
+                                      ? Icons.radio_button_checked_rounded
+                                      : Icons.radio_button_off_rounded,
+                                  color: AppColors.green,
+                                ),
+                                title: Text(
+                                  option,
+                                  style: const TextStyle(
+                                      fontWeight: FontWeight.w600),
+                                ),
+                                onTap: () {
+                                  setState(() => _selectedCategory = option);
+                                  Navigator.pop(ctx);
+                                },
+                              ),
+                          ],
+                        ),
+                      ),
                     ],
                   ),
                 ),
-              ],
+              ),
             ),
           ),
         );
@@ -311,52 +332,61 @@ class _SearchScreenState extends State<SearchScreen> {
         borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
       ),
       builder: (ctx) {
-        return SafeArea(
-          child: Padding(
-            padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Center(
-                  child: Container(
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: AppColors.border,
-                      borderRadius: BorderRadius.circular(2),
-                    ),
+        return FractionallySizedBox(
+          heightFactor: 0.55,
+          child: Material(
+            color: Colors.white,
+            child: SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 40,
+                          height: 4,
+                          decoration: BoxDecoration(
+                            color: AppColors.border,
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      const Text(
+                        'Sort by',
+                        style: TextStyle(
+                          color: AppColors.navy,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 18,
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      for (final option in options)
+                        ListTile(
+                          contentPadding: EdgeInsets.zero,
+                          leading: Icon(
+                            _sortBy == option
+                                ? Icons.radio_button_checked_rounded
+                                : Icons.radio_button_off_rounded,
+                            color: AppColors.green,
+                          ),
+                          title: Text(
+                            option,
+                            style:
+                                const TextStyle(fontWeight: FontWeight.w600),
+                          ),
+                          onTap: () {
+                            setState(() => _sortBy = option);
+                            Navigator.pop(ctx);
+                          },
+                        ),
+                    ],
                   ),
                 ),
-                const SizedBox(height: 16),
-                const Text(
-                  'Sort by',
-                  style: TextStyle(
-                    color: AppColors.navy,
-                    fontWeight: FontWeight.w900,
-                    fontSize: 18,
-                  ),
-                ),
-                const SizedBox(height: 12),
-                for (final option in options)
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    leading: Icon(
-                      _sortBy == option
-                          ? Icons.radio_button_checked_rounded
-                          : Icons.radio_button_off_rounded,
-                      color: AppColors.green,
-                    ),
-                    title: Text(
-                      option,
-                      style: const TextStyle(fontWeight: FontWeight.w600),
-                    ),
-                    onTap: () {
-                      setState(() => _sortBy = option);
-                      Navigator.pop(ctx);
-                    },
-                  ),
-              ],
+              ),
             ),
           ),
         );

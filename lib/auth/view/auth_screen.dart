@@ -322,7 +322,7 @@ class _AuthScaffold extends StatelessWidget {
     return AppScaffold(
       currentRoute: currentRoute,
       showBottomNav: false,
-      showBackButton: true,
+      showBackButton: currentRoute != '/login',
       body: SingleChildScrollView(
         padding: const EdgeInsets.fromLTRB(20, 16, 20, 32),
         child: child,

@@ -357,6 +357,7 @@ class AppStatsBar extends StatelessWidget {
   }
 }
 
+// ignore: unused_element
 class _HeroVisualPainter extends CustomPainter {
   @override
   void paint(Canvas canvas, Size size) {
@@ -417,6 +418,7 @@ class _HeroVisualPainter extends CustomPainter {
   bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
 }
 
+// ignore: unused_element
 class _FloatingCards extends StatelessWidget {
   const _FloatingCards();
 

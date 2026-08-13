@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../auth/bindings/auth_binding.dart';
 import '../home/view/home_screen.dart';
 
 /// App-style scaffold: compact top bar, scroll body, bottom navigation.
@@ -25,16 +26,13 @@ class AppScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     PreferredSizeWidget appBarWidget;
-    if (currentRoute == '/jobs') {
+    if (![
+      '/login',
+      '/register',
+      '/verify',
+      '/forgot-password',
+    ].contains(currentRoute)) {
       appBarWidget = const JobsAppBar();
-    } else if (currentRoute == '/proposals') {
-      appBarWidget = const ProposalsAppBar();
-    } else if (currentRoute == '/contracts') {
-      appBarWidget = const ContractsAppBar();
-    } else if (currentRoute == '/messages') {
-      appBarWidget = const MessagesAppBar();
-    } else if (currentRoute == '/alerts') {
-      appBarWidget = const AlertsAppBar();
     } else if (isHome) {
       appBarWidget = const HomeAppBar();
     } else {
@@ -70,26 +68,83 @@ class JobsAppBar extends StatelessWidget implements PreferredSizeWidget {
   const JobsAppBar({super.key});
 
   @override
-  Size get preferredSize => const Size.fromHeight(72);
+  Size get preferredSize => const Size.fromHeight(104);
 
   @override
   Widget build(BuildContext context) {
-    return AppBar(
-      automaticallyImplyLeading: false,
-      elevation: 0,
-      scrolledUnderElevation: 0.5,
-      surfaceTintColor: Colors.transparent,
-      backgroundColor: Colors.white,
-      titleSpacing: 16,
-      toolbarHeight: 72,
-      title: const BrandLockup(compact: true),
-      actions: [
-        Container(
-          width: 46,
-          height: 46,
+    return Material(
+      color: AppColors.cream50,
+      child: SafeArea(
+        bottom: false,
+        child: Padding(
+          padding: const EdgeInsets.fromLTRB(12, 10, 12, 10),
+          child: Container(
+            height: 74,
+            padding: const EdgeInsets.symmetric(horizontal: 18),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(24),
+              border: Border.all(color: AppColors.cardBorder),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.navy.withValues(alpha: 0.07),
+                  blurRadius: 24,
+                  offset: const Offset(0, 12),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                const Expanded(
+                  child: Align(
+                    alignment: Alignment.centerLeft,
+                    child: BrandLockup(compact: true),
+                  ),
+                ),
+                _AppBarIconBox(
+                  icon: Icons.notifications_rounded,
+                  color: AppColors.saffron,
+                  onTap: () => Navigator.of(context).pushNamed('/alerts'),
+                ),
+                const SizedBox(width: 12),
+                _AppBarIconBox(
+                  icon: Icons.menu_rounded,
+                  color: AppColors.navy,
+                  onTap: () => _openJobsMenu(context),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _AppBarIconBox extends StatelessWidget {
+  const _AppBarIconBox({
+    required this.icon,
+    required this.color,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final Color color;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(16),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(16),
+        child: Container(
+          width: 50,
+          height: 50,
           decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(14),
+            borderRadius: BorderRadius.circular(16),
             boxShadow: [
               BoxShadow(
                 color: AppColors.navy.withValues(alpha: 0.08),
@@ -98,21 +153,9 @@ class JobsAppBar extends StatelessWidget implements PreferredSizeWidget {
               ),
             ],
           ),
-          child: IconButton(
-            icon: const Icon(Icons.notifications_rounded, size: 22),
-            color: AppColors.saffron,
-            tooltip: 'Notifications',
-            onPressed: () => Navigator.of(context).pushNamed('/alerts'),
-          ),
+          child: Icon(icon, color: color, size: 25),
         ),
-        IconButton(
-          icon: const Icon(Icons.menu_rounded, size: 26),
-          color: AppColors.navy,
-          tooltip: 'Menu',
-          onPressed: () => _openJobsMenu(context),
-        ),
-        const SizedBox(width: 16),
-      ],
+      ),
     );
   }
 }
@@ -395,74 +438,181 @@ class AlertsAppBar extends StatelessWidget implements PreferredSizeWidget {
 void _openJobsMenu(BuildContext context) {
   showModalBottomSheet<void>(
     context: context,
-    backgroundColor: Colors.white,
+    isScrollControlled: true,
+    backgroundColor: Colors.transparent,
     shape: const RoundedRectangleBorder(
       borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
     ),
     builder: (ctx) {
-      return SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.fromLTRB(20, 12, 20, 20),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Container(
-                  width: 40,
-                  height: 4,
-                  decoration: BoxDecoration(
-                    color: AppColors.border,
-                    borderRadius: BorderRadius.circular(2),
+      return DraggableScrollableSheet(
+        expand: false,
+        initialChildSize: 0.62,
+        minChildSize: 0.45,
+        maxChildSize: 0.85,
+        builder: (sheetContext, scrollController) {
+          return Container(
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+            ),
+            child: SafeArea(
+              top: false,
+              child: Column(
+                children: [
+                  const SizedBox(height: 10),
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: AppColors.border,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
                   ),
-                ),
+                  const SizedBox(height: 12),
+                  Expanded(
+                    child: ListView(
+                      controller: scrollController,
+                      padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
+                      children: [
+                        const Text(
+                          'Dashboard menu',
+                          style: TextStyle(
+                            color: AppColors.navy,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 18,
+                          ),
+                        ),
+                        const SizedBox(height: 12),
+                        ..._dashboardMenuItems.map(
+                          (item) => ListTile(
+                            dense: true,
+                            visualDensity: VisualDensity.compact,
+                            minLeadingWidth: 30,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 4),
+                            leading: Icon(item.icon, color: item.color, size: 22),
+                            title: Text(
+                              item.label,
+                              style: const TextStyle(
+                                color: AppColors.ink700,
+                                fontWeight: FontWeight.w800,
+                                fontSize: 16,
+                              ),
+                            ),
+                            onTap: () {
+                              Navigator.pop(ctx);
+                              Navigator.of(context).pushNamed(item.route);
+                            },
+                          ),
+                        ),
+                        const Divider(height: 18),
+                        ListTile(
+                          dense: true,
+                          visualDensity: VisualDensity.compact,
+                          minLeadingWidth: 30,
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 4),
+                          leading: const Icon(
+                            Icons.logout_rounded,
+                            color: AppColors.green,
+                            size: 22,
+                          ),
+                          title: const Text(
+                            'Sign out',
+                            style: TextStyle(
+                              color: AppColors.green,
+                              fontWeight: FontWeight.w900,
+                              fontSize: 16,
+                            ),
+                          ),
+                          onTap: () {
+                            Navigator.pop(ctx);
+                            AuthBinding.of(context).logout();
+                            Navigator.of(context).pushNamedAndRemoveUntil(
+                              '/login',
+                              (_) => false,
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
               ),
-              const SizedBox(height: 16),
-              const Text(
-                'Menu',
-                style: TextStyle(
-                  color: AppColors.navy,
-                  fontWeight: FontWeight.w900,
-                  fontSize: 18,
-                ),
-              ),
-              const SizedBox(height: 12),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: const Icon(
-                  Icons.settings_outlined,
-                  color: AppColors.green,
-                ),
-                title: const Text(
-                  'Settings',
-                  style: TextStyle(fontWeight: FontWeight.w700),
-                ),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  Navigator.of(context).pushNamed('/settings');
-                },
-              ),
-              ListTile(
-                contentPadding: EdgeInsets.zero,
-                leading: const Icon(
-                  Icons.person_outline_rounded,
-                  color: AppColors.green,
-                ),
-                title: const Text(
-                  'Profile',
-                  style: TextStyle(fontWeight: FontWeight.w700),
-                ),
-                onTap: () {
-                  Navigator.pop(ctx);
-                  Navigator.of(context).pushNamed('/profile');
-                },
-              ),
-            ],
-          ),
-        ),
+            ),
+          );
+        },
       );
     },
   );
+}
+
+const _dashboardMenuItems = [
+  _MenuRoute(
+    'Overview',
+    '/overview',
+    Icons.dashboard_customize_rounded,
+    AppColors.green,
+  ),
+  _MenuRoute(
+    'My jobs',
+    '/jobs',
+    Icons.business_center_outlined,
+    Color(0xff1688d8),
+  ),
+  _MenuRoute('Post a job', '/post-job', Icons.edit_square, AppColors.green),
+  _MenuRoute(
+    'My proposals',
+    '/proposals',
+    Icons.article_outlined,
+    Color(0xff9146d8),
+  ),
+  _MenuRoute(
+    'Invitations',
+    '/invitations',
+    Icons.mail_outline_rounded,
+    AppColors.saffron,
+  ),
+  _MenuRoute(
+    'Offers received',
+    '/offers-received',
+    Icons.card_giftcard_rounded,
+    Color(0xff1688d8),
+  ),
+  _MenuRoute(
+    'Offers sent',
+    '/offers-sent',
+    Icons.near_me_outlined,
+    AppColors.green,
+  ),
+  _MenuRoute(
+    'Contracts',
+    '/contracts',
+    Icons.description_outlined,
+    Color(0xff1688d8),
+  ),
+  _MenuRoute(
+    'Payouts',
+    '/payouts',
+    Icons.account_balance_wallet_outlined,
+    Color(0xff9146d8),
+  ),
+  _MenuRoute(
+    'Messages',
+    '/messages',
+    Icons.chat_bubble_outline_rounded,
+    AppColors.saffron,
+  ),
+  _MenuRoute('Settings', '/settings', Icons.settings_outlined, AppColors.green),
+];
+
+class _MenuRoute {
+  const _MenuRoute(this.label, this.route, this.icon, this.color);
+
+  final String label;
+  final String route;
+  final IconData icon;
+  final Color color;
 }
 
 class AppAppBar extends StatelessWidget implements PreferredSizeWidget {
@@ -563,38 +713,43 @@ class AppBottomNav extends StatelessWidget {
   final String currentRoute;
 
   static const _navItems = [
-    _NavItem('/jobs', Icons.search_rounded, 'Jobs'),
-    _NavItem('/proposals', Icons.description_rounded, 'Proposals'),
-    _NavItem('/contracts', Icons.receipt_long_rounded, 'Contracts'),
+    _NavItem('/overview', Icons.home_rounded, 'Dashboard'),
+    _NavItem('/jobs', Icons.business_center_outlined, 'My jobs'),
+    _NavItem('/create', Icons.add_rounded, 'Post a job'),
     _NavItem('/messages', Icons.chat_bubble_rounded, 'Messages'),
-    _NavItem('/alerts', Icons.notifications_rounded, 'Alerts'),
+    _NavItem('/settings', Icons.settings_rounded, 'Settings'),
   ];
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      decoration: BoxDecoration(
-        color: Colors.white,
-        border: Border(
-          top: BorderSide(color: AppColors.border.withValues(alpha: 0.6)),
-        ),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.navy.withValues(alpha: 0.06),
-            blurRadius: 12,
-            offset: const Offset(0, -4),
+    return SafeArea(
+      top: false,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
+        child: Container(
+          height: 94,
+          padding: const EdgeInsets.fromLTRB(16, 8, 16, 8),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: const BorderRadius.vertical(top: Radius.circular(24)),
+            border: Border(
+              top: BorderSide(color: AppColors.border.withValues(alpha: 0.55)),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.navy.withValues(alpha: 0.12),
+                blurRadius: 26,
+                offset: const Offset(0, -10),
+              ),
+            ],
           ),
-        ],
-      ),
-      child: SafeArea(
-        top: false,
-        child: SizedBox(
-          height: 62,
           child: Row(
+            crossAxisAlignment: CrossAxisAlignment.center,
             children: [
               for (final item in _navItems)
                 Expanded(
                   child: _BottomNavItem(
+                    route: item.route,
                     icon: item.icon,
                     label: item.label,
                     selected: currentRoute == item.route,
@@ -609,8 +764,155 @@ class AppBottomNav extends StatelessWidget {
   }
 
   void _navigate(BuildContext context, String route) {
+    if (route == '/create') {
+      _openCreateMenu(context);
+      return;
+    }
     if (currentRoute == route) return;
-    Navigator.of(context).pushNamedAndRemoveUntil(route, (_) => false);
+    Navigator.of(context).pushReplacementNamed(route);
+  }
+
+  void _openCreateMenu(BuildContext context) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+      ),
+      builder: (ctx) {
+        return Material(
+          color: Colors.white,
+          child: SafeArea(
+            child: Padding(
+              padding: EdgeInsets.fromLTRB(
+                20,
+                12,
+                20,
+                20 + MediaQuery.of(ctx).viewInsets.bottom,
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 44,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: AppColors.border,
+                        borderRadius: BorderRadius.circular(999),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  const Text(
+                    'Choose profile',
+                    style: TextStyle(
+                      color: AppColors.navy,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 20,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  _CreateMenuTile(
+                    icon: Icons.person_outline_rounded,
+                    title: 'Freelancer profile',
+                    subtitle: 'Edit your public work profile',
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      Navigator.of(
+                        context,
+                      ).pushReplacementNamed('/freelancer-profile');
+                    },
+                  ),
+                  const SizedBox(height: 10),
+                  _CreateMenuTile(
+                    icon: Icons.apartment_rounded,
+                    title: 'Client profile',
+                    subtitle: 'Edit your hiring profile',
+                    onTap: () {
+                      Navigator.pop(ctx);
+                      Navigator.of(
+                        context,
+                      ).pushReplacementNamed('/client-profile');
+                    },
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _CreateMenuTile extends StatelessWidget {
+  const _CreateMenuTile({
+    required this.icon,
+    required this.title,
+    required this.subtitle,
+    required this.onTap,
+  });
+
+  final IconData icon;
+  final String title;
+  final String subtitle;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: AppColors.cream50,
+      borderRadius: BorderRadius.circular(18),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(18),
+        child: Padding(
+          padding: const EdgeInsets.all(16),
+          child: Row(
+            children: [
+              CircleAvatar(
+                radius: 23,
+                backgroundColor: AppColors.green100,
+                child: Icon(icon, color: AppColors.green, size: 25),
+              ),
+              const SizedBox(width: 14),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: const TextStyle(
+                        color: AppColors.navy,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w900,
+                      ),
+                    ),
+                    const SizedBox(height: 3),
+                    Text(
+                      subtitle,
+                      style: const TextStyle(
+                        color: AppColors.ink500,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const Icon(
+                Icons.chevron_right_rounded,
+                color: AppColors.ink500,
+                size: 26,
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
   }
 }
 
@@ -623,12 +925,14 @@ class _NavItem {
 
 class _BottomNavItem extends StatelessWidget {
   const _BottomNavItem({
+    required this.route,
     required this.icon,
     required this.label,
     required this.selected,
     required this.onTap,
   });
 
+  final String route;
   final IconData icon;
   final String label;
   final bool selected;
@@ -636,39 +940,95 @@ class _BottomNavItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final activeColor = AppColors.saffron;
+    final activeColor = AppColors.green;
     final inactiveColor = AppColors.ink500;
     final color = selected ? activeColor : inactiveColor;
+    final isCreate = route == '/create';
 
-    return InkWell(
-      onTap: onTap,
-      borderRadius: BorderRadius.circular(12),
-      child: Padding(
-        padding: const EdgeInsets.symmetric(vertical: 6),
-        child: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            AnimatedContainer(
-              duration: const Duration(milliseconds: 200),
-              width: selected ? 20 : 0,
-              height: selected ? 3 : 0,
-              margin: const EdgeInsets.only(bottom: 3),
-              decoration: BoxDecoration(
-                color: AppColors.saffron,
-                borderRadius: BorderRadius.circular(2),
-              ),
+    return Material(
+      color: Colors.transparent,
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(22),
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 2),
+          child: SizedBox(
+            height: 78,
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                if (isCreate) ...[
+                  Transform.translate(
+                    offset: const Offset(0, -8),
+                    child: Container(
+                      width: 58,
+                      height: 58,
+                      decoration: BoxDecoration(
+                        color: AppColors.green,
+                        shape: BoxShape.circle,
+                        boxShadow: [
+                          BoxShadow(
+                            color: AppColors.green.withValues(alpha: 0.24),
+                            blurRadius: 22,
+                            offset: const Offset(0, 9),
+                          ),
+                        ],
+                      ),
+                      child: const Icon(
+                        Icons.add_rounded,
+                        color: Colors.white,
+                        size: 36,
+                      ),
+                    ),
+                  ),
+                  Transform.translate(
+                    offset: const Offset(0, -6),
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        label,
+                        maxLines: 1,
+                        style: const TextStyle(
+                          color: AppColors.green,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w900,
+                          height: 1,
+                        ),
+                      ),
+                    ),
+                  ),
+                ] else ...[
+                  AnimatedContainer(
+                    duration: const Duration(milliseconds: 200),
+                    width: selected ? 58 : 44,
+                    height: selected ? 58 : 44,
+                    decoration: BoxDecoration(
+                      color: selected ? AppColors.green100 : Colors.transparent,
+                      borderRadius: BorderRadius.circular(18),
+                    ),
+                    child: Icon(icon, color: color, size: selected ? 31 : 27),
+                  ),
+                  const SizedBox(height: 3),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      label,
+                      maxLines: 1,
+                      style: TextStyle(
+                        color: color,
+                        fontSize: 12,
+                        fontWeight: selected
+                            ? FontWeight.w900
+                            : FontWeight.w700,
+                        height: 1,
+                      ),
+                    ),
+                  ),
+                ],
+              ],
             ),
-            Icon(icon, color: color, size: 24),
-            const SizedBox(height: 3),
-            Text(
-              label,
-              style: TextStyle(
-                color: color,
-                fontSize: 11,
-                fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
-              ),
-            ),
-          ],
+          ),
         ),
       ),
     );

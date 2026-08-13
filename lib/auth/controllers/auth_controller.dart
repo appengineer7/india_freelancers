@@ -103,7 +103,7 @@ class AuthController extends ChangeNotifier {
     loginError = null;
     setCurrentUserFromLogin();
     clearAllAuthFields();
-    Navigator.of(context).pushNamedAndRemoveUntil('/', (_) => false);
+    Navigator.of(context).pushNamedAndRemoveUntil('/overview', (_) => false);
   }
 
   void logout() {
@@ -117,7 +117,7 @@ class AuthController extends ChangeNotifier {
     setCurrentUserFromRegister();
     registerError = null;
     clearAllAuthFields();
-    Navigator.of(context).pushNamed('/verify');
+    Navigator.of(context).pushNamedAndRemoveUntil('/overview', (_) => false);
   }
 
   @override
