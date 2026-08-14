@@ -1453,12 +1453,17 @@ class _JobCardContainer extends StatelessWidget {
                       ),
                     ),
                     const Spacer(),
-                    Text(
-                      job.location,
-                      style: const TextStyle(
-                        color: AppColors.ink500,
-                        fontSize: 12,
-                        fontWeight: FontWeight.w600,
+                    Flexible(
+                      child: Text(
+                        job.location,
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        textAlign: TextAlign.right,
+                        style: const TextStyle(
+                          color: AppColors.ink500,
+                          fontSize: 12,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
                   ],

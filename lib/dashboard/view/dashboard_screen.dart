@@ -447,44 +447,60 @@ class _TopBar extends StatelessWidget {
                         controller: scrollController,
                         padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
                         children: [
-                          ...DashboardPages.navItems.map(
-                            (item) => ListTile(
-                              leading: Icon(
-                                _iconSpec(item.kind).icon,
-                                color: _iconSpec(item.kind).color,
-                              ),
-                              title: Text(
-                                item.label,
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 16,
+                          ...DashboardPages.navItems.map((item) {
+                            final spec = _iconSpec(item.kind);
+                            return Padding(
+                              padding: const EdgeInsets.only(bottom: 12),
+                              child: Material(
+                                color: Colors.transparent,
+                                child: InkWell(
+                                  borderRadius: BorderRadius.circular(14),
+                                  onTap: () {
+                                    Navigator.pop(ctx);
+                                    Navigator.of(context).pushNamed(item.route);
+                                  },
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 6,
+                                      horizontal: 2,
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          width: 32,
+                                          height: 32,
+                                          decoration: BoxDecoration(
+                                            color: spec.color.withValues(alpha: 0.12),
+                                            borderRadius: BorderRadius.circular(10),
+                                            border: Border.all(
+                                              color: spec.color.withValues(alpha: 0.18),
+                                            ),
+                                          ),
+                                          child: Icon(
+                                            spec.icon,
+                                            color: spec.color,
+                                            size: 18,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Text(
+                                            item.label,
+                                            style: TextStyle(
+                                              color: AppColors.navy,
+                                              fontWeight: FontWeight.w700,
+                                              fontSize: 17,
+                                              height: 1.25,
+                                            ),
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
                                 ),
                               ),
-                              onTap: () {
-                                Navigator.pop(ctx);
-                                Navigator.of(context).pushNamed(item.route);
-                              },
-                            ),
-                          ),
-                          const Divider(height: 18),
-                          ListTile(
-                            leading: const Icon(
-                              Icons.logout_rounded,
-                              color: AppColors.green,
-                            ),
-                            title: const Text(
-                              'Sign out',
-                              style: TextStyle(
-                                color: AppColors.green,
-                                fontWeight: FontWeight.w900,
-                                fontSize: 16,
-                              ),
-                            ),
-                            onTap: () {
-                              Navigator.pop(ctx);
-                              onSignOut();
-                            },
-                          ),
+                            );
+                          }),
                         ],
                       ),
                     ),
@@ -653,6 +669,39 @@ class _PageHero extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final compact = MediaQuery.sizeOf(context).width < 560;
+
+    if (page.kind == DashboardPageKind.payouts) {
+      return Padding(
+        padding: EdgeInsets.only(bottom: compact ? 16 : 20),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              page.title,
+              style: TextStyle(
+                color: AppColors.navy,
+                fontSize: compact ? 28 : 34,
+                fontWeight: FontWeight.w800,
+                letterSpacing: -0.8,
+              ),
+            ),
+            if (page.description != null) ...[
+              SizedBox(height: compact ? 8 : 10),
+              Text(
+                page.description!,
+                style: TextStyle(
+                  color: AppColors.ink500,
+                  fontSize: compact ? 14 : 16,
+                  height: 1.45,
+                  fontWeight: FontWeight.w500,
+                ),
+              ),
+            ],
+          ],
+        ),
+      );
+    }
+
     final spec = _iconSpec(page.kind);
     return Container(
       width: double.infinity,
@@ -863,17 +912,44 @@ class _PayoutsPanel extends StatelessWidget {
             "You haven't connected a payout account yet.",
             style: TextStyle(
               color: AppColors.ink700,
-              fontSize: compact ? 19 : 24,
-              height: 1.45,
+              fontSize: compact ? 17 : 20,
+              height: 1.4,
               fontWeight: FontWeight.w600,
             ),
           ),
-          SizedBox(height: compact ? 22 : 26),
-          _GreenButton(
-            label: 'Connect with Stripe',
-            large: true,
-            compact: compact,
-            onTap: () {},
+          SizedBox(height: compact ? 14 : 18),
+          // compact connect button but ensure full text fits by scaling down if needed
+          Align(
+            alignment: Alignment.centerLeft,
+            child: Material(
+              color: AppColors.green,
+              borderRadius: BorderRadius.circular(12),
+              elevation: 6,
+              shadowColor: AppColors.green.withValues(alpha: 0.28),
+              child: InkWell(
+                borderRadius: BorderRadius.circular(12),
+                onTap: () {},
+                child: Container(
+                  padding: EdgeInsets.symmetric(
+                    horizontal: compact ? 18 : 22,
+                    vertical: compact ? 10 : 12,
+                  ),
+                  constraints: BoxConstraints(minWidth: compact ? 160 : 200),
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      'Connect with Stripe',
+                      style: TextStyle(
+                        color: Colors.white,
+                        fontSize: compact ? 16 : 18,
+                        fontWeight: FontWeight.w800,
+                      ),
+                    ),
+                  ),
+                ),
+              ),
+            ),
           ),
         ],
       ),
