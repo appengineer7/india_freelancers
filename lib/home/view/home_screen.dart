@@ -62,6 +62,7 @@ class AppColors {
   static const ink300 = Color(0xff98a0ad);
   static const border = Color(0xffd5dae1);
   static const cardBorder = Color(0xffeef1f5);
+  static const greenSoft = Color(0xffdff3e6);
 }
 
 class _Constrained extends StatelessWidget {

@@ -5,6 +5,7 @@ class PostedJob {
     required this.id,
     required this.title,
     required this.description,
+    this.deliverables = '',
     required this.timeAgo,
     required this.location,
     required this.category,
@@ -18,11 +19,15 @@ class PostedJob {
     required this.visibility,
     required this.timezone,
     required this.skills,
+    this.questionOne = '',
+    this.questionTwo = '',
+    this.questionThree = '',
   });
 
   final int id;
   final String title;
   final String description;
+  final String deliverables;
   final String timeAgo;
   final String location;
 
@@ -38,6 +43,9 @@ class PostedJob {
   final String visibility;
   final String timezone;
   final List<String> skills;
+  final String questionOne;
+  final String questionTwo;
+  final String questionThree;
 }
 
 class JobStore extends ChangeNotifier {

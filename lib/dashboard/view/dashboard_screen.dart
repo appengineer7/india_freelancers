@@ -1198,6 +1198,8 @@ class _PostJobForm extends StatelessWidget {
                     id: id,
                     title: title,
                     description: desc,
+                    deliverables:
+                        controller.deliverablesController.text.trim(),
                     timeAgo: 'Just now',
                     location: controller.freelancerLocation,
                     category: controller.jobCategory,
@@ -1211,6 +1213,9 @@ class _PostJobForm extends StatelessWidget {
                     visibility: controller.visibility,
                     timezone: controller.timezoneController.text.trim(),
                     skills: controller.selectedJobSkills.toList(),
+                    questionOne: controller.questionOneController.text.trim(),
+                    questionTwo: controller.questionTwoController.text.trim(),
+                    questionThree: controller.questionThreeController.text.trim(),
                   );
                   JobStore.instance.addJob(job);
                   Navigator.of(context).pushReplacementNamed('/jobs');
@@ -1232,8 +1237,6 @@ class _MyJobsList extends StatefulWidget {
 }
 
 class _MyJobsListState extends State<_MyJobsList> {
-  int? _expandedId;
-
   @override
   void initState() {
     super.initState();
@@ -1257,12 +1260,16 @@ class _MyJobsListState extends State<_MyJobsList> {
           padding: const EdgeInsets.only(top: 56.0),
           child: Text(
             'No jobs posted yet',
-            style: TextStyle(color: AppColors.ink500, fontSize: 18, fontWeight: FontWeight.w700),
+            style: TextStyle(
+              color: AppColors.ink500,
+              fontSize: 18,
+              fontWeight: FontWeight.w700,
+            ),
           ),
         ),
       );
     }
-    int? expandedId;
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -1271,68 +1278,255 @@ class _MyJobsListState extends State<_MyJobsList> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                InkWell(
-                  onTap: () {
-                    setState(() {
-                      if (expandedId == job.id) {
-                        expandedId = null;
-                      } else {
-                        expandedId = job.id;
-                      }
-                    });
-                  },
-                  child: ListTile(
-                    title: Text(job.title, style: const TextStyle(fontWeight: FontWeight.w900)),
-                    subtitle: Text(job.description, maxLines: 2, overflow: TextOverflow.ellipsis),
-                    trailing: Text(job.timeAgo),
-                  ),
-                ),
-                if (expandedId == job.id) ...[
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(16, 6, 16, 16),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text('Category: ${job.category}', style: const TextStyle(fontWeight: FontWeight.w700)),
-                        const SizedBox(height: 6),
-                        Text('Type: ${job.projectType}'),
-                        const SizedBox(height: 6),
-                        if (job.fixedBudget.isNotEmpty) Text('Fixed budget: ${job.fixedBudget}'),
-                        if (job.hourlyMin.isNotEmpty || job.hourlyMax.isNotEmpty)
-                          Text('Hourly: ${job.hourlyMin} - ${job.hourlyMax}'),
-                        const SizedBox(height: 6),
-                        Text('Experience: ${job.experienceLevel}'),
-                        const SizedBox(height: 6),
-                        Text('Duration: ${job.expectedDuration}'),
-                        const SizedBox(height: 6),
-                        if (job.weeklyHours.isNotEmpty) Text('Weekly hours: ${job.weeklyHours}'),
-                        const SizedBox(height: 6),
-                        Text('Visibility: ${job.visibility}'),
-                        const SizedBox(height: 6),
-                        if (job.timezone.isNotEmpty) Text('Timezone: ${job.timezone}'),
-                        const SizedBox(height: 10),
-                        const Text('Description', style: TextStyle(fontWeight: FontWeight.w800)),
-                        const SizedBox(height: 6),
-                        Text(job.description),
-                        const SizedBox(height: 10),
-                        if (job.skills.isNotEmpty) ...[
-                          const Text('Skills', style: TextStyle(fontWeight: FontWeight.w800)),
-                          const SizedBox(height: 6),
-                          Wrap(
-                            spacing: 8,
-                            children: job.skills.map((s) => Chip(label: Text(s))).toList(),
-                          ),
-                        ],
-                      ],
+                Row(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Expanded(
+                      child: Text(
+                        job.title,
+                        style: const TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.w900,
+                        ),
+                      ),
                     ),
+                    const SizedBox(width: 16),
+                    Text(
+                      job.timeAgo,
+                      style: TextStyle(
+                        color: AppColors.ink500,
+                        fontWeight: FontWeight.w700,
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 14),
+                Wrap(
+                  spacing: 10,
+                  runSpacing: 10,
+                  children: [
+                    _JobInfoPill(label: 'Category', value: job.category),
+                    _JobInfoPill(label: 'Type', value: job.projectType),
+                    _JobInfoPill(label: 'Location', value: job.location),
+                    _JobInfoPill(label: 'Visibility', value: job.visibility),
+                  ],
+                ),
+                const SizedBox(height: 22),
+                _JobDetailGrid(
+                  items: [
+                    _JobDetailItem('Fixed budget', job.fixedBudget),
+                    _JobDetailItem(
+                      'Hourly rate',
+                      _formatHourlyRate(job.hourlyMin, job.hourlyMax),
+                    ),
+                    _JobDetailItem('Experience', job.experienceLevel),
+                    _JobDetailItem('Expected duration', job.expectedDuration),
+                    _JobDetailItem('Weekly hours', job.weeklyHours),
+                    _JobDetailItem('Timezone', job.timezone),
+                  ],
+                ),
+                const SizedBox(height: 22),
+                _JobTextSection(
+                  title: 'Description',
+                  text: job.description,
+                ),
+                const SizedBox(height: 18),
+                _JobTextSection(
+                  title: 'Deliverables',
+                  text: job.deliverables,
+                ),
+                const SizedBox(height: 18),
+                const Text(
+                  'Skills needed',
+                  style: TextStyle(fontWeight: FontWeight.w900),
+                ),
+                const SizedBox(height: 10),
+                if (job.skills.isEmpty)
+                  Text(
+                    'Not provided',
+                    style: TextStyle(color: AppColors.ink500),
+                  )
+                else
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: job.skills
+                        .map(
+                          (skill) => Chip(
+                            label: Text(skill),
+                            backgroundColor: AppColors.greenSoft,
+                            side: BorderSide(color: AppColors.greenSoft),
+                          ),
+                        )
+                        .toList(),
                   ),
-                ],
+                const SizedBox(height: 18),
+                const Text(
+                  'Screening questions',
+                  style: TextStyle(fontWeight: FontWeight.w900),
+                ),
+                const SizedBox(height: 10),
+                _ScreeningQuestion(number: 1, text: job.questionOne),
+                _ScreeningQuestion(number: 2, text: job.questionTwo),
+                _ScreeningQuestion(number: 3, text: job.questionThree),
               ],
             ),
           ),
       ],
     );
   }
+
+  String _formatHourlyRate(String min, String max) {
+    final cleanMin = min.trim();
+    final cleanMax = max.trim();
+    if (cleanMin.isEmpty && cleanMax.isEmpty) return '';
+    if (cleanMin.isEmpty) return 'Up to $cleanMax';
+    if (cleanMax.isEmpty) return 'From $cleanMin';
+    return '$cleanMin - $cleanMax';
+  }
+}
+
+class _JobInfoPill extends StatelessWidget {
+  const _JobInfoPill({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    final displayValue = _displayValue(value);
+    return DecoratedBox(
+      decoration: BoxDecoration(
+        color: AppColors.greenSoft,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        child: Text(
+          '$label: $displayValue',
+          style: TextStyle(
+            color: AppColors.green,
+            fontSize: 12,
+            fontWeight: FontWeight.w800,
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _JobDetailGrid extends StatelessWidget {
+  const _JobDetailGrid({required this.items});
+
+  final List<_JobDetailItem> items;
+
+  @override
+  Widget build(BuildContext context) {
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final itemWidth = constraints.maxWidth < 620
+            ? constraints.maxWidth
+            : (constraints.maxWidth - 16) / 2;
+        return Wrap(
+          spacing: 16,
+          runSpacing: 14,
+          children: [
+            for (final item in items)
+              SizedBox(
+                width: itemWidth,
+                child: DecoratedBox(
+                  decoration: BoxDecoration(
+                    color: const Color(0xfff8faf9),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xffe3e7e4)),
+                  ),
+                  child: Padding(
+                    padding: const EdgeInsets.all(12),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          item.label,
+                          style: TextStyle(
+                            color: AppColors.ink500,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w800,
+                          ),
+                        ),
+                        const SizedBox(height: 5),
+                        Text(
+                          _displayValue(item.value),
+                          style: const TextStyle(fontWeight: FontWeight.w800),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+          ],
+        );
+      },
+    );
+  }
+}
+
+class _JobDetailItem {
+  const _JobDetailItem(this.label, this.value);
+
+  final String label;
+  final String value;
+}
+
+class _JobTextSection extends StatelessWidget {
+  const _JobTextSection({required this.title, required this.text});
+
+  final String title;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Text(title, style: const TextStyle(fontWeight: FontWeight.w900)),
+        const SizedBox(height: 8),
+        Text(
+          _displayValue(text),
+          style: TextStyle(
+            color: text.trim().isEmpty ? AppColors.ink500 : AppColors.ink700,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _ScreeningQuestion extends StatelessWidget {
+  const _ScreeningQuestion({required this.number, required this.text});
+
+  final int number;
+  final String text;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 6),
+      child: Text(
+        'Q$number: ${_displayValue(text)}',
+        style: TextStyle(
+          color: text.trim().isEmpty ? AppColors.ink500 : AppColors.ink700,
+        ),
+      ),
+    );
+  }
+}
+
+String _displayValue(String value) {
+  final trimmed = value.trim();
+  if (trimmed.isEmpty || trimmed == 'Select a category') {
+    return 'Not provided';
+  }
+  return trimmed;
 }
 
 class _FreelancerProfileForm extends StatelessWidget {
