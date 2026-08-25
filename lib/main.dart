@@ -22,8 +22,11 @@ import 'pages/info_pages.dart'
         ProposalsScreen;
 import 'contracts/view/workroom_timesheet_screen.dart';
 import 'jobs/view/job_search_screen.dart';
+import 'services/job_store.dart';
 
-void main() {
+Future<void> main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await JobStore.instance.load();
   runApp(const IndiaFreelancersApp());
 }
 
@@ -48,11 +51,11 @@ class IndiaFreelancersApp extends StatelessWidget {
         ),
         pageTransitionsTheme: const PageTransitionsTheme(
           builders: {
-            TargetPlatform.android: _NoPageTransitionsBuilder(),
-            TargetPlatform.iOS: _NoPageTransitionsBuilder(),
-            TargetPlatform.macOS: _NoPageTransitionsBuilder(),
-            TargetPlatform.windows: _NoPageTransitionsBuilder(),
-            TargetPlatform.linux: _NoPageTransitionsBuilder(),
+            TargetPlatform.android: _SoftPageTransitionsBuilder(),
+            TargetPlatform.iOS: _SoftPageTransitionsBuilder(),
+            TargetPlatform.macOS: _SoftPageTransitionsBuilder(),
+            TargetPlatform.windows: _SoftPageTransitionsBuilder(),
+            TargetPlatform.linux: _SoftPageTransitionsBuilder(),
           },
         ),
         scaffoldBackgroundColor: AppColors.cream50,
@@ -226,8 +229,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) => const IndiaFreelancersApp();
 }
 
-class _NoPageTransitionsBuilder extends PageTransitionsBuilder {
-  const _NoPageTransitionsBuilder();
+class _SoftPageTransitionsBuilder extends PageTransitionsBuilder {
+  const _SoftPageTransitionsBuilder();
 
   @override
   Widget buildTransitions<T>(
@@ -237,6 +240,19 @@ class _NoPageTransitionsBuilder extends PageTransitionsBuilder {
     Animation<double> secondaryAnimation,
     Widget child,
   ) {
-    return child;
+    final curved = CurvedAnimation(
+      parent: animation,
+      curve: Curves.easeOutCubic,
+      reverseCurve: Curves.easeInCubic,
+    );
+    final offset = Tween<Offset>(
+      begin: const Offset(0.025, 0),
+      end: Offset.zero,
+    ).animate(curved);
+
+    return FadeTransition(
+      opacity: curved,
+      child: SlideTransition(position: offset, child: child),
+    );
   }
 }

@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../../auth/bindings/auth_binding.dart';
+import '../../auth/controllers/auth_controller.dart';
 import '../../core/site_shell.dart';
 import '../../services/job_store.dart';
 import '../../home/view/home_screen.dart';
@@ -53,6 +55,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
             return ListenableBuilder(
               listenable: controller,
               builder: (context, _) {
+                final authController = AuthBinding.of(context);
                 return Scaffold(
                   backgroundColor: AppColors.cream50,
                   bottomNavigationBar: AppBottomNav(
@@ -66,6 +69,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
                           onSignOut: () => _signOut(context),
                           onNotifications: () =>
                               _selectPage(DashboardPageKind.notifications),
+                          accountMode: authController.activeAccountMode,
                         ),
                         const SizedBox(height: 14),
                         AnimatedSwitcher(
@@ -113,17 +117,17 @@ class _DashboardScreenState extends State<DashboardScreen> {
     return switch (kind) {
       DashboardPageKind.overview => '/overview',
       DashboardPageKind.myJobs ||
+      DashboardPageKind.offersSent ||
+      DashboardPageKind.notifications ||
+      DashboardPageKind.securitySessions => '/jobs',
       DashboardPageKind.myProposals ||
       DashboardPageKind.invitations ||
       DashboardPageKind.offersReceived ||
-      DashboardPageKind.offersSent ||
       DashboardPageKind.contracts ||
-      DashboardPageKind.payouts ||
-      DashboardPageKind.notifications ||
-      DashboardPageKind.securitySessions => '/jobs',
+      DashboardPageKind.payouts => '/proposals',
       DashboardPageKind.freelancerProfile ||
-      DashboardPageKind.clientProfile ||
-      DashboardPageKind.postJob => '/create',
+      DashboardPageKind.clientProfile => '/settings',
+      DashboardPageKind.postJob => '/post-job',
       DashboardPageKind.messages => '/messages',
     };
   }
@@ -208,6 +212,36 @@ class DashboardPages {
       kind: DashboardPageKind.securitySessions,
     ),
   ];
+
+  static Iterable<DashboardNavItem> navItemsForMode(String accountMode) {
+    final clientKinds = {
+      DashboardPageKind.overview,
+      DashboardPageKind.myJobs,
+      DashboardPageKind.postJob,
+      DashboardPageKind.offersSent,
+      DashboardPageKind.contracts,
+      DashboardPageKind.messages,
+      DashboardPageKind.notifications,
+      DashboardPageKind.clientProfile,
+      DashboardPageKind.securitySessions,
+    };
+    final freelancerKinds = {
+      DashboardPageKind.overview,
+      DashboardPageKind.myProposals,
+      DashboardPageKind.invitations,
+      DashboardPageKind.offersReceived,
+      DashboardPageKind.contracts,
+      DashboardPageKind.payouts,
+      DashboardPageKind.messages,
+      DashboardPageKind.notifications,
+      DashboardPageKind.freelancerProfile,
+      DashboardPageKind.securitySessions,
+    };
+    final visibleKinds = accountMode == 'client'
+        ? freelancerKinds
+        : clientKinds;
+    return navItems.where((item) => visibleKinds.contains(item.kind));
+  }
 
   static DashboardPageModel byKind(DashboardPageKind kind) {
     return switch (kind) {
@@ -331,10 +365,15 @@ class DashboardPages {
 }
 
 class _TopBar extends StatelessWidget {
-  const _TopBar({required this.onSignOut, required this.onNotifications});
+  const _TopBar({
+    required this.onSignOut,
+    required this.onNotifications,
+    required this.accountMode,
+  });
 
   final VoidCallback onSignOut;
   final VoidCallback onNotifications;
+  final String accountMode;
 
   @override
   Widget build(BuildContext context) {
@@ -407,110 +446,183 @@ class _TopBar extends StatelessWidget {
   }
 
   void _openMenu(BuildContext context) {
-    showModalBottomSheet<void>(
+    showGeneralDialog<void>(
       context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
-      ),
-      builder: (ctx) {
-        return DraggableScrollableSheet(
-          expand: false,
-          initialChildSize: 0.62,
-          minChildSize: 0.45,
-          maxChildSize: 0.85,
-          builder: (sheetContext, scrollController) {
-            return Container(
-              decoration: const BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(18)),
-              ),
-              child: SafeArea(
-                top: false,
-                child: Column(
-                  children: [
-                    const SizedBox(height: 10),
-                    Center(
-                      child: Container(
-                        width: 42,
-                        height: 4,
-                        decoration: BoxDecoration(
-                          color: AppColors.border,
-                          borderRadius: BorderRadius.circular(2),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Expanded(
-                      child: ListView(
-                        controller: scrollController,
-                        padding: const EdgeInsets.fromLTRB(20, 0, 20, 20),
-                        children: [
-                          ...DashboardPages.navItems.map((item) {
-                            final spec = _iconSpec(item.kind);
-                            return Padding(
-                              padding: const EdgeInsets.only(bottom: 12),
-                              child: Material(
-                                color: Colors.transparent,
-                                child: InkWell(
-                                  borderRadius: BorderRadius.circular(14),
-                                  onTap: () {
-                                    Navigator.pop(ctx);
-                                    Navigator.of(context).pushNamed(item.route);
-                                  },
-                                  child: Padding(
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 6,
-                                      horizontal: 2,
-                                    ),
-                                    child: Row(
-                                      children: [
-                                        Container(
-                                          width: 32,
-                                          height: 32,
-                                          decoration: BoxDecoration(
-                                            color: spec.color.withValues(alpha: 0.12),
-                                            borderRadius: BorderRadius.circular(10),
-                                            border: Border.all(
-                                              color: spec.color.withValues(alpha: 0.18),
-                                            ),
-                                          ),
-                                          child: Icon(
-                                            spec.icon,
-                                            color: spec.color,
-                                            size: 18,
-                                          ),
-                                        ),
-                                        const SizedBox(width: 12),
-                                        Expanded(
-                                          child: Text(
-                                            item.label,
-                                            style: TextStyle(
-                                              color: AppColors.navy,
-                                              fontWeight: FontWeight.w700,
-                                              fontSize: 17,
-                                              height: 1.25,
-                                            ),
-                                          ),
-                                        ),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            );
-                          }),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            );
+      barrierDismissible: true,
+      barrierLabel: MaterialLocalizations.of(context).modalBarrierDismissLabel,
+      barrierColor: Colors.black.withValues(alpha: 0.42),
+      transitionDuration: const Duration(milliseconds: 260),
+      pageBuilder: (ctx, animation, secondaryAnimation) {
+        return _DashboardMenuPanel(
+          accountMode: accountMode,
+          onClose: () => Navigator.pop(ctx),
+          onNavigate: (route) {
+            Navigator.pop(ctx);
+            Navigator.of(context).pushNamed(route);
+          },
+          onSignOut: () {
+            Navigator.pop(ctx);
+            onSignOut();
           },
         );
       },
+      transitionBuilder: (context, animation, secondaryAnimation, child) {
+        final offset =
+            Tween<Offset>(begin: const Offset(1, 0), end: Offset.zero).animate(
+              CurvedAnimation(parent: animation, curve: Curves.easeOutCubic),
+            );
+        return SlideTransition(position: offset, child: child);
+      },
+    );
+  }
+}
+
+class _DashboardMenuPanel extends StatelessWidget {
+  const _DashboardMenuPanel({
+    required this.accountMode,
+    required this.onClose,
+    required this.onNavigate,
+    required this.onSignOut,
+  });
+
+  final String accountMode;
+  final VoidCallback onClose;
+  final ValueChanged<String> onNavigate;
+  final VoidCallback onSignOut;
+
+  @override
+  Widget build(BuildContext context) {
+    final width = MediaQuery.sizeOf(context).width;
+    final panelWidth = width < 560 ? width * 0.86 : 380.0;
+
+    return Align(
+      alignment: Alignment.centerRight,
+      child: Material(
+        color: Colors.transparent,
+        child: Container(
+          width: panelWidth,
+          height: double.infinity,
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: const BorderRadius.horizontal(
+              left: Radius.circular(24),
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.navy.withValues(alpha: 0.16),
+                blurRadius: 36,
+                offset: const Offset(-12, 0),
+              ),
+            ],
+          ),
+          child: SafeArea(
+            child: ListView(
+              padding: const EdgeInsets.fromLTRB(20, 18, 20, 24),
+              children: [
+                Row(
+                  children: [
+                    const Expanded(
+                      child: Text(
+                        'Dashboard menu',
+                        style: TextStyle(
+                          color: AppColors.navy,
+                          fontWeight: FontWeight.w900,
+                          fontSize: 24,
+                        ),
+                      ),
+                    ),
+                    _IconBox(
+                      icon: Icons.menu_open_rounded,
+                      color: AppColors.navy,
+                      size: 46,
+                      onTap: onClose,
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 18),
+                ...DashboardPages.navItemsForMode(accountMode).map((item) {
+                  final spec = _iconSpec(item.kind);
+                  return _DashboardMenuTile(
+                    icon: spec.icon,
+                    color: spec.color,
+                    label: item.label,
+                    onTap: () => onNavigate(item.route),
+                  );
+                }),
+                const SizedBox(height: 10),
+                const Divider(height: 22),
+                _DashboardMenuTile(
+                  icon: Icons.logout_rounded,
+                  color: AppColors.green,
+                  label: 'Sign out',
+                  emphasize: true,
+                  onTap: onSignOut,
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _DashboardMenuTile extends StatelessWidget {
+  const _DashboardMenuTile({
+    required this.icon,
+    required this.color,
+    required this.label,
+    required this.onTap,
+    this.emphasize = false,
+  });
+
+  final IconData icon;
+  final Color color;
+  final String label;
+  final VoidCallback onTap;
+  final bool emphasize;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: Material(
+        color: color.withValues(alpha: 0.06),
+        borderRadius: BorderRadius.circular(14),
+        child: InkWell(
+          borderRadius: BorderRadius.circular(14),
+          onTap: onTap,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 13),
+            child: Row(
+              children: [
+                Container(
+                  width: 36,
+                  height: 36,
+                  decoration: BoxDecoration(
+                    color: color.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(color: color.withValues(alpha: 0.2)),
+                  ),
+                  child: Icon(icon, color: color, size: 20),
+                ),
+                const SizedBox(width: 14),
+                Expanded(
+                  child: Text(
+                    label,
+                    style: TextStyle(
+                      color: emphasize ? AppColors.green : AppColors.ink700,
+                      fontWeight: emphasize ? FontWeight.w900 : FontWeight.w800,
+                      fontSize: 17,
+                      height: 1.25,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -616,46 +728,38 @@ class _DashboardBody extends StatelessWidget {
   Widget build(BuildContext context) {
     final page = controller.page;
     final compact = MediaQuery.sizeOf(context).width < 560;
+    final content = Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        _PageHero(page: page, onSelectPage: onSelectPage),
+        SizedBox(height: compact ? 14 : 26),
+        switch (page.kind) {
+          DashboardPageKind.myJobs => _MyJobsList(),
+          DashboardPageKind.postJob => _PostJobForm(controller: controller),
+          DashboardPageKind.payouts => const _PayoutsPanel(),
+          DashboardPageKind.freelancerProfile => _FreelancerProfileForm(
+            controller: controller,
+          ),
+          DashboardPageKind.clientProfile => _ClientProfileForm(
+            controller: controller,
+          ),
+          DashboardPageKind.securitySessions => const _SecurityPanel(),
+          _ => _EmptyState(page: page, onSelectPage: onSelectPage),
+        },
+      ],
+    );
+
+    if (compact) return content;
+
     return Container(
       width: double.infinity,
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(28),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(color: AppColors.cardBorder),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.navy.withValues(alpha: 0.07),
-            blurRadius: 28,
-            offset: const Offset(0, 14),
-          ),
-        ],
       ),
-      padding: EdgeInsets.fromLTRB(
-        compact ? 16 : 28,
-        compact ? 18 : 28,
-        compact ? 16 : 28,
-        compact ? 24 : 36,
-      ),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          _PageHero(page: page, onSelectPage: onSelectPage),
-          SizedBox(height: compact ? 20 : 26),
-          switch (page.kind) {
-            DashboardPageKind.myJobs => _MyJobsList(),
-            DashboardPageKind.postJob => _PostJobForm(controller: controller),
-            DashboardPageKind.payouts => const _PayoutsPanel(),
-            DashboardPageKind.freelancerProfile => _FreelancerProfileForm(
-              controller: controller,
-            ),
-            DashboardPageKind.clientProfile => _ClientProfileForm(
-              controller: controller,
-            ),
-            DashboardPageKind.securitySessions => const _SecurityPanel(),
-            _ => _EmptyState(page: page, onSelectPage: onSelectPage),
-          },
-        ],
-      ),
+      padding: const EdgeInsets.fromLTRB(28, 28, 28, 36),
+      child: content,
     );
   }
 }
@@ -671,46 +775,16 @@ class _PageHero extends StatelessWidget {
     final compact = MediaQuery.sizeOf(context).width < 560;
 
     if (page.kind == DashboardPageKind.payouts) {
-      return Padding(
-        padding: EdgeInsets.only(bottom: compact ? 16 : 20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Text(
-              page.title,
-              style: TextStyle(
-                color: AppColors.navy,
-                fontSize: compact ? 28 : 34,
-                fontWeight: FontWeight.w800,
-                letterSpacing: -0.8,
-              ),
-            ),
-            if (page.description != null) ...[
-              SizedBox(height: compact ? 8 : 10),
-              Text(
-                page.description!,
-                style: TextStyle(
-                  color: AppColors.ink500,
-                  fontSize: compact ? 14 : 16,
-                  height: 1.45,
-                  fontWeight: FontWeight.w500,
-                ),
-              ),
-            ],
-          ],
-        ),
-      );
+      final spec = _iconSpec(page.kind);
+      return _DashboardPageHeading(page: page, spec: spec);
     }
 
     final spec = _iconSpec(page.kind);
-    return Container(
-      width: double.infinity,
-      padding: EdgeInsets.fromLTRB(
-        compact ? 18 : 28,
-        compact ? 18 : 24,
-        compact ? 16 : 24,
-        compact ? 18 : 24,
-      ),
+    if (compact) {
+      return _DashboardPageHeading(page: page, spec: spec);
+    }
+
+    return DecoratedBox(
       decoration: BoxDecoration(
         gradient: LinearGradient(
           begin: Alignment.topLeft,
@@ -720,21 +794,96 @@ class _PageHero extends StatelessWidget {
         borderRadius: BorderRadius.circular(22),
         border: Border.all(color: spec.color.withValues(alpha: 0.08)),
       ),
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(28, 24, 24, 24),
+        child: Row(
+          children: [
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _TitleRow(page: page, onSelectPage: onSelectPage),
+                  if (page.description != null) ...[
+                    const SizedBox(height: 12),
+                    Text(
+                      page.description!,
+                      style: const TextStyle(
+                        color: AppColors.ink500,
+                        fontSize: 20,
+                        height: 1.45,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+            const SizedBox(width: 18),
+            _HeroIllustration(spec: spec),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _DashboardPageHeading extends StatelessWidget {
+  const _DashboardPageHeading({required this.page, required this.spec});
+
+  final DashboardPageModel page;
+  final _DashboardIconSpec spec;
+
+  @override
+  Widget build(BuildContext context) {
+    final compact = MediaQuery.sizeOf(context).width < 560;
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.symmetric(
+        horizontal: compact ? 12 : 18,
+        vertical: compact ? 10 : 14,
+      ),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(compact ? 14 : 18),
+        border: Border.all(color: spec.color.withValues(alpha: 0.12)),
+      ),
       child: Row(
         children: [
+          Container(
+            width: compact ? 34 : 40,
+            height: compact ? 34 : 40,
+            decoration: BoxDecoration(
+              color: spec.tint,
+              borderRadius: BorderRadius.circular(10),
+            ),
+            child: Icon(spec.icon, color: spec.color, size: compact ? 18 : 22),
+          ),
+          SizedBox(width: compact ? 10 : 12),
           Expanded(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                _TitleRow(page: page, onSelectPage: onSelectPage),
-                if (page.description != null) ...[
-                  SizedBox(height: compact ? 10 : 12),
+                Text(
+                  page.title,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: AppColors.navy,
+                    fontSize: compact ? 18 : 22,
+                    height: 1.1,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                if (page.description != null && !compact) ...[
+                  const SizedBox(height: 6),
                   Text(
                     page.description!,
-                    style: TextStyle(
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                    style: const TextStyle(
                       color: AppColors.ink500,
-                      fontSize: compact ? 17 : 20,
-                      height: 1.45,
+                      fontSize: 14,
+                      height: 1.35,
                       fontWeight: FontWeight.w600,
                     ),
                   ),
@@ -742,10 +891,6 @@ class _PageHero extends StatelessWidget {
               ],
             ),
           ),
-          if (!compact) ...[
-            const SizedBox(width: 18),
-            _HeroIllustration(spec: spec),
-          ],
         ],
       ),
     );
@@ -825,7 +970,7 @@ class _TitleRow extends StatelessWidget {
           page.title,
           style: TextStyle(
             color: AppColors.navy,
-            fontSize: compact ? 22 : 26,
+            fontSize: compact ? 18 : 26,
             height: 1.05,
             fontWeight: FontWeight.w900,
           ),
@@ -846,7 +991,7 @@ class _EmptyState extends StatelessWidget {
     final compact = MediaQuery.sizeOf(context).width < 560;
     return Center(
       child: Padding(
-        padding: EdgeInsets.only(top: compact ? 44 : 72),
+        padding: EdgeInsets.only(top: compact ? 34 : 72),
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 560),
           child: Column(
@@ -962,13 +1107,16 @@ class _SecurityPanel extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final authController = AuthBinding.of(context);
     final compact = MediaQuery.sizeOf(context).width < 560;
+    final sessions = authController.sessions;
+
     return _Card(
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Text(
-            '223.178.213.2',
+            'Active sessions',
             style: TextStyle(
               color: AppColors.ink700,
               fontSize: compact ? 20 : 24,
@@ -977,28 +1125,191 @@ class _SecurityPanel extends StatelessWidget {
           ),
           const SizedBox(height: 8),
           Text(
-            'Mozilla/5.0 (Linux; Android 10; K)\nAppleWebKit/537.36 (KHTML, like Gecko) Chrome',
+            sessions.isEmpty
+                ? 'Sign in to create a device session for this account.'
+                : 'Review browsers and devices currently signed in to your account.',
             style: TextStyle(
               color: AppColors.ink500,
-              fontSize: compact ? 16 : 20,
+              fontSize: compact ? 15 : 17,
               height: 1.35,
               fontWeight: FontWeight.w500,
             ),
           ),
-          Text(
-            'Last active 2026-08-08 04:34:54',
-            style: TextStyle(
-              color: AppColors.ink500,
-              fontSize: compact ? 15 : 18,
-              fontWeight: FontWeight.w500,
-            ),
-          ),
           const SizedBox(height: 24),
-          _OutlineButton(label: 'Revoke', onTap: () {}),
+          if (sessions.isEmpty)
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(18),
+              decoration: BoxDecoration(
+                color: AppColors.cream50,
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: AppColors.cardBorder),
+              ),
+              child: const Text(
+                'No active sessions found.',
+                style: TextStyle(
+                  color: AppColors.ink500,
+                  fontWeight: FontWeight.w700,
+                ),
+              ),
+            )
+          else ...[
+            for (final session in sessions) ...[
+              _SessionTile(
+                session: session,
+                onRevoke: () {
+                  authController.revokeSession(session.id);
+                  if (!authController.isLoggedIn && context.mounted) {
+                    Navigator.of(
+                      context,
+                    ).pushNamedAndRemoveUntil('/login', (_) => false);
+                  }
+                },
+              ),
+              if (session != sessions.last) const SizedBox(height: 14),
+            ],
+            if (sessions.length > 1) ...[
+              const SizedBox(height: 22),
+              _OutlineButton(
+                label: 'Revoke other sessions',
+                onTap: authController.revokeOtherSessions,
+              ),
+            ],
+          ],
         ],
       ),
     );
   }
+}
+
+class _SessionTile extends StatelessWidget {
+  const _SessionTile({required this.session, required this.onRevoke});
+
+  final UserSession session;
+  final VoidCallback onRevoke;
+
+  @override
+  Widget build(BuildContext context) {
+    final compact = MediaQuery.sizeOf(context).width < 560;
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.all(compact ? 16 : 20),
+      decoration: BoxDecoration(
+        color: session.isCurrent ? AppColors.green100 : AppColors.cream50,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: session.isCurrent
+              ? AppColors.green.withValues(alpha: 0.28)
+              : AppColors.cardBorder,
+        ),
+      ),
+      child: compact
+          ? Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _SessionTileDetails(session: session),
+                const SizedBox(height: 16),
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: _OutlineButton(
+                    label: session.isCurrent ? 'Sign out' : 'Revoke',
+                    onTap: onRevoke,
+                  ),
+                ),
+              ],
+            )
+          : Row(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                Expanded(child: _SessionTileDetails(session: session)),
+                const SizedBox(width: 20),
+                _OutlineButton(
+                  label: session.isCurrent ? 'Sign out' : 'Revoke',
+                  onTap: onRevoke,
+                ),
+              ],
+            ),
+    );
+  }
+}
+
+class _SessionTileDetails extends StatelessWidget {
+  const _SessionTileDetails({required this.session});
+
+  final UserSession session;
+
+  @override
+  Widget build(BuildContext context) {
+    final compact = MediaQuery.sizeOf(context).width < 560;
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Wrap(
+          spacing: 10,
+          runSpacing: 8,
+          crossAxisAlignment: WrapCrossAlignment.center,
+          children: [
+            Text(
+              session.device,
+              style: TextStyle(
+                color: AppColors.navy,
+                fontSize: compact ? 17 : 19,
+                fontWeight: FontWeight.w900,
+              ),
+            ),
+            if (session.isCurrent)
+              Container(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 10,
+                  vertical: 5,
+                ),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(999),
+                  border: Border.all(
+                    color: AppColors.green.withValues(alpha: 0.25),
+                  ),
+                ),
+                child: const Text(
+                  'Current',
+                  style: TextStyle(
+                    color: AppColors.green,
+                    fontSize: 12,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+              ),
+          ],
+        ),
+        const SizedBox(height: 8),
+        Text(
+          session.ipAddress,
+          style: TextStyle(
+            color: AppColors.ink500,
+            fontSize: compact ? 14 : 15,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        const SizedBox(height: 4),
+        Text(
+          'Last active ${_formatSessionTime(session.lastActiveAt)}',
+          style: TextStyle(
+            color: AppColors.ink500,
+            fontSize: compact ? 13 : 14,
+            fontWeight: FontWeight.w600,
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+String _formatSessionTime(DateTime value) {
+  String twoDigits(int number) => number.toString().padLeft(2, '0');
+  return '${value.year}-${twoDigits(value.month)}-${twoDigits(value.day)} '
+      '${twoDigits(value.hour)}:${twoDigits(value.minute)}';
 }
 
 class _PostJobForm extends StatelessWidget {
@@ -1064,12 +1375,13 @@ class _PostJobForm extends StatelessWidget {
               ),
             ],
           ),
-          const SizedBox(height: 22),
+          const SizedBox(height: 16),
           _Field(
             label: 'Fixed budget',
             suffix: 'USD - if fixed price',
             hint: 'e.g. 500',
             controller: controller.fixedBudgetController,
+            digitsOnly: true,
           ),
           if (compact) ...[
             _Field(
@@ -1077,12 +1389,14 @@ class _PostJobForm extends StatelessWidget {
               suffix: 'if hourly',
               hint: 'e.g. 800',
               controller: controller.hourlyMinController,
+              digitsOnly: true,
             ),
             _Field(
               label: 'Hourly rate max',
               suffix: 'if hourly',
               hint: 'e.g. 1500',
               controller: controller.hourlyMaxController,
+              digitsOnly: true,
             ),
           ] else
             Row(
@@ -1093,6 +1407,7 @@ class _PostJobForm extends StatelessWidget {
                     suffix: 'if hourly',
                     hint: 'e.g. 800',
                     controller: controller.hourlyMinController,
+                    digitsOnly: true,
                   ),
                 ),
                 const SizedBox(width: 28),
@@ -1102,6 +1417,7 @@ class _PostJobForm extends StatelessWidget {
                     suffix: 'if hourly',
                     hint: 'e.g. 1500',
                     controller: controller.hourlyMaxController,
+                    digitsOnly: true,
                   ),
                 ),
               ],
@@ -1130,6 +1446,7 @@ class _PostJobForm extends StatelessWidget {
             optional: true,
             hint: 'e.g. 20',
             controller: controller.weeklyHoursController,
+            digitsOnly: true,
           ),
           _SelectField(
             label: 'Freelancer location',
@@ -1159,7 +1476,7 @@ class _PostJobForm extends StatelessWidget {
             selected: controller.selectedJobSkills,
             onChanged: controller.toggleJobSkill,
           ),
-          const SizedBox(height: 26),
+          const SizedBox(height: 18),
           _Field(
             label: 'Screening questions',
             suffix: 'optional - up to 3',
@@ -1174,10 +1491,10 @@ class _PostJobForm extends StatelessWidget {
             hint: 'Question 3',
             controller: controller.questionThreeController,
           ),
-          const SizedBox(height: 30),
+          const SizedBox(height: 20),
           Wrap(
-            spacing: 18,
-            runSpacing: 16,
+            spacing: 12,
+            runSpacing: 12,
             children: [
               _OutlineButton(label: 'Save as draft', large: true, onTap: () {}),
               _GreenButton(
@@ -1198,8 +1515,7 @@ class _PostJobForm extends StatelessWidget {
                     id: id,
                     title: title,
                     description: desc,
-                    deliverables:
-                        controller.deliverablesController.text.trim(),
+                    deliverables: controller.deliverablesController.text.trim(),
                     timeAgo: 'Just now',
                     location: controller.freelancerLocation,
                     category: controller.jobCategory,
@@ -1215,7 +1531,8 @@ class _PostJobForm extends StatelessWidget {
                     skills: controller.selectedJobSkills.toList(),
                     questionOne: controller.questionOneController.text.trim(),
                     questionTwo: controller.questionTwoController.text.trim(),
-                    questionThree: controller.questionThreeController.text.trim(),
+                    questionThree: controller.questionThreeController.text
+                        .trim(),
                   );
                   JobStore.instance.addJob(job);
                   Navigator.of(context).pushReplacementNamed('/jobs');
@@ -1240,6 +1557,7 @@ class _MyJobsListState extends State<_MyJobsList> {
   @override
   void initState() {
     super.initState();
+    JobStore.instance.load();
     JobStore.instance.addListener(_onJobsChanged);
   }
 
@@ -1274,7 +1592,22 @@ class _MyJobsListState extends State<_MyJobsList> {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
         for (final job in jobs)
-          _Card(
+          Container(
+            width: double.infinity,
+            margin: const EdgeInsets.only(bottom: 16),
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(color: AppColors.cardBorder),
+              boxShadow: [
+                BoxShadow(
+                  color: AppColors.navy.withValues(alpha: 0.04),
+                  blurRadius: 16,
+                  offset: const Offset(0, 8),
+                ),
+              ],
+            ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
@@ -1285,7 +1618,9 @@ class _MyJobsListState extends State<_MyJobsList> {
                       child: Text(
                         job.title,
                         style: const TextStyle(
-                          fontSize: 20,
+                          color: AppColors.navy,
+                          fontSize: 18,
+                          height: 1.2,
                           fontWeight: FontWeight.w900,
                         ),
                       ),
@@ -1295,15 +1630,16 @@ class _MyJobsListState extends State<_MyJobsList> {
                       job.timeAgo,
                       style: TextStyle(
                         color: AppColors.ink500,
+                        fontSize: 13,
                         fontWeight: FontWeight.w700,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(height: 14),
+                const SizedBox(height: 10),
                 Wrap(
-                  spacing: 10,
-                  runSpacing: 10,
+                  spacing: 8,
+                  runSpacing: 8,
                   children: [
                     _JobInfoPill(label: 'Category', value: job.category),
                     _JobInfoPill(label: 'Type', value: job.projectType),
@@ -1311,7 +1647,7 @@ class _MyJobsListState extends State<_MyJobsList> {
                     _JobInfoPill(label: 'Visibility', value: job.visibility),
                   ],
                 ),
-                const SizedBox(height: 22),
+                const SizedBox(height: 14),
                 _JobDetailGrid(
                   items: [
                     _JobDetailItem('Fixed budget', job.fixedBudget),
@@ -1325,17 +1661,11 @@ class _MyJobsListState extends State<_MyJobsList> {
                     _JobDetailItem('Timezone', job.timezone),
                   ],
                 ),
-                const SizedBox(height: 22),
-                _JobTextSection(
-                  title: 'Description',
-                  text: job.description,
-                ),
-                const SizedBox(height: 18),
-                _JobTextSection(
-                  title: 'Deliverables',
-                  text: job.deliverables,
-                ),
-                const SizedBox(height: 18),
+                const SizedBox(height: 14),
+                _JobTextSection(title: 'Description', text: job.description),
+                const SizedBox(height: 12),
+                _JobTextSection(title: 'Deliverables', text: job.deliverables),
+                const SizedBox(height: 12),
                 const Text(
                   'Skills needed',
                   style: TextStyle(fontWeight: FontWeight.w900),
@@ -1352,15 +1682,31 @@ class _MyJobsListState extends State<_MyJobsList> {
                     runSpacing: 8,
                     children: job.skills
                         .map(
-                          (skill) => Chip(
-                            label: Text(skill),
-                            backgroundColor: AppColors.greenSoft,
-                            side: BorderSide(color: AppColors.greenSoft),
+                          (skill) => Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.greenSoft,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                color: AppColors.green.withValues(alpha: 0.08),
+                              ),
+                            ),
+                            child: Text(
+                              skill,
+                              style: const TextStyle(
+                                color: AppColors.ink700,
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.w700,
+                              ),
+                            ),
                           ),
                         )
                         .toList(),
                   ),
-                const SizedBox(height: 18),
+                const SizedBox(height: 12),
                 const Text(
                   'Screening questions',
                   style: TextStyle(fontWeight: FontWeight.w900),
@@ -1401,12 +1747,12 @@ class _JobInfoPill extends StatelessWidget {
         borderRadius: BorderRadius.circular(999),
       ),
       child: Padding(
-        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
         child: Text(
           '$label: $displayValue',
           style: TextStyle(
             color: AppColors.green,
-            fontSize: 12,
+            fontSize: 11.5,
             fontWeight: FontWeight.w800,
           ),
         ),
@@ -1424,12 +1770,13 @@ class _JobDetailGrid extends StatelessWidget {
   Widget build(BuildContext context) {
     return LayoutBuilder(
       builder: (context, constraints) {
-        final itemWidth = constraints.maxWidth < 620
-            ? constraints.maxWidth
+        final compact = constraints.maxWidth < 620;
+        final itemWidth = compact
+            ? (constraints.maxWidth - 10) / 2
             : (constraints.maxWidth - 16) / 2;
         return Wrap(
-          spacing: 16,
-          runSpacing: 14,
+          spacing: compact ? 10 : 16,
+          runSpacing: compact ? 10 : 14,
           children: [
             for (final item in items)
               SizedBox(
@@ -1437,11 +1784,11 @@ class _JobDetailGrid extends StatelessWidget {
                 child: DecoratedBox(
                   decoration: BoxDecoration(
                     color: const Color(0xfff8faf9),
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(10),
                     border: Border.all(color: const Color(0xffe3e7e4)),
                   ),
                   child: Padding(
-                    padding: const EdgeInsets.all(12),
+                    padding: EdgeInsets.all(compact ? 10 : 12),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -1449,14 +1796,20 @@ class _JobDetailGrid extends StatelessWidget {
                           item.label,
                           style: TextStyle(
                             color: AppColors.ink500,
-                            fontSize: 12,
+                            fontSize: compact ? 11 : 12,
                             fontWeight: FontWeight.w800,
                           ),
                         ),
                         const SizedBox(height: 5),
                         Text(
                           _displayValue(item.value),
-                          style: const TextStyle(fontWeight: FontWeight.w800),
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            color: AppColors.ink700,
+                            fontSize: compact ? 13 : 15,
+                            fontWeight: FontWeight.w800,
+                          ),
                         ),
                       ],
                     ),
@@ -1717,6 +2070,7 @@ class _Field extends StatelessWidget {
     this.optional = false,
     this.suffix,
     this.lines = 1,
+    this.digitsOnly = false,
   });
 
   final String label;
@@ -1725,6 +2079,7 @@ class _Field extends StatelessWidget {
   final bool optional;
   final String? suffix;
   final int lines;
+  final bool digitsOnly;
 
   @override
   Widget build(BuildContext context) {
@@ -1738,14 +2093,18 @@ class _Field extends StatelessWidget {
           controller: controller,
           minLines: lines,
           maxLines: lines,
+          keyboardType: digitsOnly ? TextInputType.number : null,
+          inputFormatters: digitsOnly
+              ? [FilteringTextInputFormatter.digitsOnly]
+              : null,
           style: TextStyle(
             color: AppColors.navy,
-            fontSize: compact ? 18 : 24,
+            fontSize: compact ? 15.5 : 24,
             fontWeight: FontWeight.w500,
           ),
           decoration: _inputDecoration(hint, compact: compact),
         ),
-        const SizedBox(height: 30),
+        SizedBox(height: compact ? 18 : 30),
       ],
     );
   }
@@ -1766,7 +2125,7 @@ class _BareField extends StatelessWidget {
         controller: controller,
         style: TextStyle(
           color: AppColors.navy,
-          fontSize: compact ? 18 : 24,
+          fontSize: compact ? 15.5 : 24,
           fontWeight: FontWeight.w500,
         ),
         decoration: _inputDecoration(hint, compact: compact),
@@ -1809,12 +2168,12 @@ class _SelectField extends StatelessWidget {
           icon: const Icon(Icons.keyboard_arrow_down_rounded),
           style: TextStyle(
             color: AppColors.navy,
-            fontSize: compact ? 18 : 24,
+            fontSize: compact ? 15.5 : 24,
             fontWeight: FontWeight.w500,
           ),
           decoration: _inputDecoration('', compact: compact),
         ),
-        const SizedBox(height: 30),
+        SizedBox(height: compact ? 18 : 30),
       ],
     );
   }
@@ -1842,19 +2201,12 @@ class _SkillsBox extends StatelessWidget {
         _SectionLabel(title),
         const SizedBox(height: 10),
         Container(
-          constraints: const BoxConstraints(maxHeight: 360),
-          padding: const EdgeInsets.symmetric(vertical: 10),
+          constraints: BoxConstraints(maxHeight: compact ? 280 : 360),
+          padding: EdgeInsets.symmetric(vertical: compact ? 6 : 10),
           decoration: BoxDecoration(
             color: Colors.white,
-            borderRadius: BorderRadius.circular(28),
+            borderRadius: BorderRadius.circular(compact ? 14 : 28),
             border: Border.all(color: AppColors.cardBorder),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.navy.withValues(alpha: 0.09),
-                blurRadius: 24,
-                offset: const Offset(0, 14),
-              ),
-            ],
           ),
           child: ListView(
             shrinkWrap: true,
@@ -1874,7 +2226,7 @@ class _SkillsBox extends StatelessWidget {
                     skill,
                     style: TextStyle(
                       color: AppColors.ink700,
-                      fontSize: compact ? 16 : 22,
+                      fontSize: compact ? 14.5 : 22,
                       fontWeight: FontWeight.w500,
                     ),
                   ),
@@ -1902,7 +2254,7 @@ class _Label extends StatelessWidget {
         text: label,
         style: TextStyle(
           color: AppColors.navy,
-          fontSize: compact ? 18 : 23,
+          fontSize: compact ? 15.5 : 23,
           fontWeight: FontWeight.w900,
         ),
         children: [
@@ -1932,7 +2284,7 @@ class _SectionLabel extends StatelessWidget {
       text,
       style: TextStyle(
         color: AppColors.navy,
-        fontSize: compact ? 18 : 23,
+        fontSize: compact ? 15.5 : 23,
         fontWeight: FontWeight.w900,
       ),
     );
@@ -1944,15 +2296,15 @@ InputDecoration _inputDecoration(String hint, {required bool compact}) {
     hintText: hint,
     hintStyle: TextStyle(
       color: Color(0xff8d8f95),
-      fontSize: compact ? 17 : 23,
+      fontSize: compact ? 15 : 23,
       height: 1.3,
       fontWeight: FontWeight.w500,
     ),
     filled: true,
     fillColor: Colors.white,
     contentPadding: EdgeInsets.symmetric(
-      horizontal: compact ? 18 : 24,
-      vertical: compact ? 16 : 20,
+      horizontal: compact ? 14 : 24,
+      vertical: compact ? 13 : 20,
     ),
     enabledBorder: OutlineInputBorder(
       borderRadius: BorderRadius.circular(14),
@@ -2011,7 +2363,7 @@ class _RadioChoice extends StatelessWidget {
             label,
             style: TextStyle(
               color: AppColors.ink700,
-              fontSize: compact ? 17 : 22,
+              fontSize: compact ? 15 : 22,
               fontWeight: FontWeight.w500,
             ),
           ),
@@ -2047,17 +2399,20 @@ class _Card extends StatelessWidget {
     final compact = MediaQuery.sizeOf(context).width < 560;
     return Container(
       width: double.infinity,
-      padding: EdgeInsets.all(compact ? 24 : 40),
+      padding: EdgeInsets.all(compact ? 16 : 40),
       decoration: BoxDecoration(
         color: Colors.white,
-        borderRadius: BorderRadius.circular(compact ? 22 : 28),
-        boxShadow: [
-          BoxShadow(
-            color: AppColors.navy.withValues(alpha: 0.08),
-            blurRadius: 28,
-            offset: const Offset(0, 16),
-          ),
-        ],
+        borderRadius: BorderRadius.circular(compact ? 16 : 28),
+        border: compact ? Border.all(color: AppColors.cardBorder) : null,
+        boxShadow: compact
+            ? null
+            : [
+                BoxShadow(
+                  color: AppColors.navy.withValues(alpha: 0.08),
+                  blurRadius: 28,
+                  offset: const Offset(0, 16),
+                ),
+              ],
       ),
       child: child,
     );
@@ -2121,14 +2476,14 @@ class _GreenButton extends StatelessWidget {
         onTap: onTap,
         child: Padding(
           padding: EdgeInsets.symmetric(
-            horizontal: compact ? (large ? 26 : 20) : (large ? 42 : 28),
-            vertical: compact ? (large ? 15 : 13) : (large ? 20 : 16),
+            horizontal: compact ? (large ? 20 : 18) : (large ? 42 : 28),
+            vertical: compact ? (large ? 12 : 11) : (large ? 20 : 16),
           ),
           child: Text(
             label,
             style: TextStyle(
               color: Colors.white,
-              fontSize: compact ? (large ? 18 : 16) : (large ? 24 : 22),
+              fontSize: compact ? (large ? 15.5 : 15) : (large ? 24 : 22),
               fontWeight: FontWeight.w900,
             ),
           ),
@@ -2151,6 +2506,7 @@ class _OutlineButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final compact = MediaQuery.sizeOf(context).width < 560;
     return Material(
       color: Colors.white,
       borderRadius: BorderRadius.circular(large ? 16 : 14),
@@ -2159,8 +2515,8 @@ class _OutlineButton extends StatelessWidget {
         onTap: onTap,
         child: Container(
           padding: EdgeInsets.symmetric(
-            horizontal: large ? 42 : 28,
-            vertical: large ? 20 : 14,
+            horizontal: compact ? (large ? 20 : 18) : (large ? 42 : 28),
+            vertical: compact ? (large ? 12 : 11) : (large ? 20 : 14),
           ),
           decoration: BoxDecoration(
             border: Border.all(color: AppColors.border),
@@ -2170,7 +2526,7 @@ class _OutlineButton extends StatelessWidget {
             label,
             style: TextStyle(
               color: AppColors.navy,
-              fontSize: large ? 24 : 18,
+              fontSize: compact ? (large ? 15.5 : 15) : (large ? 24 : 18),
               fontWeight: FontWeight.w900,
             ),
           ),
