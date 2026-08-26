@@ -9,6 +9,8 @@ import '../../home/view/home_screen.dart';
 import '../bindings/dashboard_binding.dart';
 import '../controllers/dashboard_controller.dart';
 import '../models/dashboard_page_model.dart';
+import '../../messages/models/message_model.dart';
+import '../../messages/controllers/messages_controller.dart';
 
 class DashboardScreen extends StatefulWidget {
   const DashboardScreen({super.key, required this.page});
@@ -115,6 +117,7 @@ class _DashboardScreenState extends State<DashboardScreen> {
 
   String _bottomNavRouteFor(DashboardPageKind kind) {
     return switch (kind) {
+      DashboardPageKind.messages => '/messages',
       DashboardPageKind.overview => '/overview',
       DashboardPageKind.myJobs ||
       DashboardPageKind.offersSent ||
@@ -744,6 +747,7 @@ class _DashboardBody extends StatelessWidget {
             controller: controller,
           ),
           DashboardPageKind.securitySessions => const _SecurityPanel(),
+          DashboardPageKind.messages => const _MessagesPanel(),
           _ => _EmptyState(page: page, onSelectPage: onSelectPage),
         },
       ],
@@ -2575,3 +2579,390 @@ const _allSkills = [
   'Voice Over',
   'WordPress',
 ];
+
+class _MessagesPanel extends StatefulWidget {
+  const _MessagesPanel();
+
+  @override
+  State<_MessagesPanel> createState() => _MessagesPanelState();
+}
+
+class _MessagesPanelState extends State<_MessagesPanel> {
+  late final MessagesController _controller;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller = MessagesController();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListenableBuilder(
+      listenable: _controller,
+      builder: (context, _) {
+        final chats = _controller.chats;
+
+        return LayoutBuilder(
+          builder: (context, constraints) {
+            final wide = constraints.maxWidth >= 720;
+
+            if (wide) {
+              final selected = _controller.selectedChat ?? chats.first;
+              return Container(
+                height: 560,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: AppColors.cardBorder),
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: Row(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: [
+                    SizedBox(
+                      width: 300,
+                      child: _ChatListPane(
+                        chats: chats,
+                        selectedChat: selected,
+                        onTap: _controller.openChat,
+                      ),
+                    ),
+                    const VerticalDivider(width: 1, color: AppColors.cardBorder),
+                    Expanded(child: _ChatDetailPanel(chat: selected)),
+                  ],
+                ),
+              );
+            }
+
+            // Compact / mobile layout: list first, tap to open detail.
+            final selectedChat = _controller.selectedChat;
+            if (selectedChat == null) {
+              return Container(
+                height: 480,
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(18),
+                  border: Border.all(color: AppColors.cardBorder),
+                ),
+                clipBehavior: Clip.antiAlias,
+                child: _ChatListPane(
+                  chats: chats,
+                  selectedChat: null,
+                  onTap: _controller.openChat,
+                ),
+              );
+            }
+
+            return Container(
+              height: 520,
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(18),
+                border: Border.all(color: AppColors.cardBorder),
+              ),
+              clipBehavior: Clip.antiAlias,
+              child: Column(
+                children: [
+                  Material(
+                    color: AppColors.cream50,
+                    child: InkWell(
+                      onTap: _controller.closeChat,
+                      child: const Padding(
+                        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        child: Row(
+                          children: [
+                            Icon(Icons.arrow_back_rounded, size: 18, color: AppColors.navy),
+                            SizedBox(width: 8),
+                            Text(
+                              'Back to chats',
+                              style: TextStyle(
+                                color: AppColors.navy,
+                                fontWeight: FontWeight.w700,
+                                fontSize: 13,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const Divider(height: 1, color: AppColors.cardBorder),
+                  Expanded(child: _ChatDetailPanel(chat: selectedChat)),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+}
+
+class _ChatListPane extends StatelessWidget {
+  const _ChatListPane({
+    required this.chats,
+    required this.selectedChat,
+    required this.onTap,
+  });
+
+  final List<ChatThread> chats;
+  final ChatThread? selectedChat;
+  final ValueChanged<ChatThread> onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    if (chats.isEmpty) {
+      return const Center(
+        child: Text(
+          'No conversations yet',
+          style: TextStyle(color: AppColors.ink500, fontWeight: FontWeight.w700),
+        ),
+      );
+    }
+
+    return ListView.separated(
+      padding: EdgeInsets.zero,
+      itemCount: chats.length,
+      separatorBuilder: (_, _) =>
+      const Divider(height: 1, color: AppColors.cardBorder),
+      itemBuilder: (context, index) {
+        final chat = chats[index];
+        final isSelected = selectedChat?.name == chat.name;
+
+        return Material(
+          color: isSelected ? const Color(0xfff0f7f2) : Colors.white,
+          child: InkWell(
+            onTap: () => onTap(chat),
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      CircleAvatar(
+                        radius: 20,
+                        backgroundColor: AppColors.navy,
+                        child: Text(
+                          chat.initials,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 13,
+                          ),
+                        ),
+                      ),
+                      Positioned(
+                        right: -1,
+                        bottom: -1,
+                        child: Container(
+                          width: 11,
+                          height: 11,
+                          decoration: BoxDecoration(
+                            color: chat.online ? AppColors.green : Colors.grey.shade400,
+                            shape: BoxShape.circle,
+                            border: Border.all(color: Colors.white, width: 2),
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(width: 12),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            if (chat.starred) ...[
+                              const Icon(Icons.star_rounded, color: AppColors.saffron, size: 15),
+                              const SizedBox(width: 4),
+                            ],
+                            Expanded(
+                              child: Text(
+                                chat.name,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  color: AppColors.navy,
+                                  fontWeight: FontWeight.w800,
+                                  fontSize: 14,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Text(
+                              chat.time,
+                              style: const TextStyle(
+                                color: AppColors.ink500,
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 3),
+                        Text(
+                          chat.project,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: AppColors.ink500,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          chat.preview,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                            color: AppColors.ink900,
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        );
+      },
+    );
+  }
+}
+
+class _ChatDetailPanel extends StatelessWidget {
+  const _ChatDetailPanel({required this.chat});
+
+  final ChatThread chat;
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(14),
+          child: Row(
+            children: [
+              CircleAvatar(
+                radius: 18,
+                backgroundColor: AppColors.navy,
+                child: Text(
+                  chat.initials,
+                  style: const TextStyle(
+                    color: Colors.white,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 12,
+                  ),
+                ),
+              ),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Text(
+                  chat.name,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: AppColors.navy,
+                    fontWeight: FontWeight.w900,
+                    fontSize: 15,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const Divider(height: 1, color: AppColors.cardBorder),
+        Expanded(
+          child: ListView.builder(
+            padding: const EdgeInsets.all(16),
+            itemCount: chat.messages.length,
+            itemBuilder: (context, index) {
+              final message = chat.messages[index];
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 14),
+                child: Align(
+                  alignment:
+                  message.fromMe ? Alignment.centerRight : Alignment.centerLeft,
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 320),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                      decoration: BoxDecoration(
+                        color: message.fromMe
+                            ? AppColors.green.withValues(alpha: 0.12)
+                            : AppColors.cream50,
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: message.fromMe
+                              ? AppColors.green.withValues(alpha: 0.2)
+                              : AppColors.cardBorder,
+                        ),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            message.text,
+                            style: const TextStyle(
+                              color: AppColors.ink900,
+                              fontSize: 14,
+                              height: 1.4,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                          if (message.imageUrl != null) ...[
+                            const SizedBox(height: 8),
+                            ClipRRect(
+                              borderRadius: BorderRadius.circular(10),
+                              child: Image.network(
+                                message.imageUrl!,
+                                width: 220,
+                                height: 130,
+                                fit: BoxFit.cover,
+                                errorBuilder: (context, error, stackTrace) => Container(
+                                  width: 220,
+                                  height: 130,
+                                  color: Colors.grey.shade200,
+                                  child: const Icon(Icons.broken_image_rounded,
+                                      color: Colors.grey),
+                                ),
+                              ),
+                            ),
+                          ],
+                          const SizedBox(height: 4),
+                          Text(
+                            message.time,
+                            style: const TextStyle(
+                              color: AppColors.ink500,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+      ],
+    );
+  }
+}

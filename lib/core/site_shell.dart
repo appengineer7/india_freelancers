@@ -529,7 +529,7 @@ class _JobsMenuPanel extends StatelessWidget {
                 ),
                 const SizedBox(height: 18),
                 ..._dashboardMenuItemsForMode(accountMode).map(
-                  (item) => _JobsMenuTile(
+                      (item) => _JobsMenuTile(
                     item: item,
                     onTap: () => onNavigate(item.route),
                   ),
@@ -696,7 +696,7 @@ Iterable<_MenuRoute> _dashboardMenuItemsForMode(String accountMode) {
       ? freelancerRoutes
       : clientRoutes;
   return _dashboardMenuItems.where(
-    (item) => visibleRoutes.contains(item.route),
+        (item) => visibleRoutes.contains(item.route),
   );
 }
 
@@ -735,37 +735,37 @@ class AppAppBar extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: Colors.white,
       leading: showBackButton
           ? IconButton(
-              icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-              color: AppColors.navy,
-              onPressed: () {
-                final navigator = Navigator.of(context);
-                if (navigator.canPop()) {
-                  navigator.pop();
-                } else {
-                  navigator.pushReplacementNamed('/');
-                }
-              },
-            )
+        icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+        color: AppColors.navy,
+        onPressed: () {
+          final navigator = Navigator.of(context);
+          if (navigator.canPop()) {
+            navigator.pop();
+          } else {
+            navigator.pushReplacementNamed('/');
+          }
+        },
+      )
           : null,
       title: title != null
           ? Text(
-              title!,
-              style: const TextStyle(
-                color: AppColors.navy,
-                fontWeight: FontWeight.w900,
-                fontSize: 17,
-              ),
-            )
+        title!,
+        style: const TextStyle(
+          color: AppColors.navy,
+          fontWeight: FontWeight.w900,
+          fontSize: 17,
+        ),
+      )
           : const BrandLockup(compact: true),
       actions: showNotification
           ? [
-              IconButton(
-                icon: const Icon(Icons.notifications_outlined, size: 24),
-                color: AppColors.ink700,
-                onPressed: () => Navigator.of(context).pushNamed('/alerts'),
-              ),
-              const SizedBox(width: 4),
-            ]
+        IconButton(
+          icon: const Icon(Icons.notifications_outlined, size: 24),
+          color: AppColors.ink700,
+          onPressed: () => Navigator.of(context).pushNamed('/alerts'),
+        ),
+        const SizedBox(width: 4),
+      ]
           : null,
     );
   }
@@ -806,9 +806,11 @@ class AppBottomNav extends StatelessWidget {
 
   final String currentRoute;
 
+  // All icons now use the same "_rounded" family so every item has a
+  // consistent visual weight across the bar.
   static const _clientNavItems = [
     _NavItem('/overview', Icons.home_rounded, 'Dashboard'),
-    _NavItem('/jobs', Icons.business_center_outlined, 'My jobs'),
+    _NavItem('/jobs', Icons.business_center_rounded, 'My jobs'),
     _NavItem('/post-job', Icons.add_rounded, 'Post a job'),
     _NavItem('/messages', Icons.chat_bubble_rounded, 'Messages'),
     _NavItem('/settings', Icons.settings_rounded, 'Settings'),
@@ -816,7 +818,7 @@ class AppBottomNav extends StatelessWidget {
 
   static const _freelancerNavItems = [
     _NavItem('/overview', Icons.home_rounded, 'Dashboard'),
-    _NavItem('/proposals', Icons.article_outlined, 'My proposals'),
+    _NavItem('/proposals', Icons.article_rounded, 'My proposals'),
     _NavItem('/messages', Icons.chat_bubble_rounded, 'Messages'),
     _NavItem('/settings', Icons.settings_rounded, 'Settings'),
   ];
@@ -831,40 +833,37 @@ class AppBottomNav extends StatelessWidget {
 
     return SafeArea(
       top: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(0, 0, 0, 0),
-        child: Container(
-          height: 72,
-          padding: const EdgeInsets.fromLTRB(12, 6, 12, 6),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-            border: Border(
-              top: BorderSide(color: AppColors.border.withValues(alpha: 0.55)),
+      child: Container(
+        height: 64,
+        padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
+          border: Border(
+            top: BorderSide(color: AppColors.border.withValues(alpha: 0.55)),
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: AppColors.navy.withValues(alpha: 0.08),
+              blurRadius: 14,
+              offset: const Offset(0, -4),
             ),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.navy.withValues(alpha: 0.1),
-                blurRadius: 18,
-                offset: const Offset(0, -6),
-              ),
-            ],
-          ),
-          child: Row(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              for (final item in navItems)
-                Expanded(
-                  child: _BottomNavItem(
-                    route: item.route,
-                    icon: item.icon,
-                    label: item.label,
-                    selected: currentRoute == item.route,
-                    onTap: () => _navigate(context, item.route),
-                  ),
+          ],
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            for (final item in navItems)
+              Expanded(
+                child: _BottomNavItem(
+                  route: item.route,
+                  icon: item.icon,
+                  label: item.label,
+                  selected: currentRoute == item.route,
+                  onTap: () => _navigate(context, item.route),
                 ),
-            ],
-          ),
+              ),
+          ],
         ),
       ),
     );
@@ -909,86 +908,65 @@ class _BottomNavItem extends StatelessWidget {
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(18),
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 2),
-          child: SizedBox(
-            height: 60,
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: [
-                if (isCreate) ...[
-                  Transform.translate(
-                    offset: const Offset(0, -4),
-                    child: Container(
-                      width: 46,
-                      height: 46,
-                      decoration: BoxDecoration(
-                        color: AppColors.green,
-                        shape: BoxShape.circle,
-                        boxShadow: [
-                          BoxShadow(
-                            color: AppColors.green.withValues(alpha: 0.2),
-                            blurRadius: 14,
-                            offset: const Offset(0, 5),
-                          ),
-                        ],
-                      ),
-                      child: const Icon(
-                        Icons.add_rounded,
-                        color: Colors.white,
-                        size: 29,
-                      ),
-                    ),
-                  ),
-                  Transform.translate(
-                    offset: const Offset(0, -3),
-                    child: FittedBox(
-                      fit: BoxFit.scaleDown,
-                      child: Text(
-                        label,
-                        maxLines: 1,
-                        style: const TextStyle(
-                          color: AppColors.green,
-                          fontSize: 10.5,
-                          fontWeight: FontWeight.w900,
-                          height: 1,
-                        ),
-                      ),
-                    ),
-                  ),
-                ] else ...[
-                  AnimatedContainer(
-                    duration: const Duration(milliseconds: 200),
-                    curve: Curves.easeOutCubic,
-                    width: selected ? 42 : 36,
-                    height: selected ? 36 : 34,
+        borderRadius: BorderRadius.circular(14),
+        child: SizedBox(
+          height: 56,
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              if (isCreate) ...[
+                Transform.translate(
+                  offset: const Offset(0, -3),
+                  child: Container(
+                    width: 38,
+                    height: 38,
                     decoration: BoxDecoration(
-                      color: selected ? AppColors.green100 : Colors.transparent,
-                      borderRadius: BorderRadius.circular(13),
+                      color: AppColors.green,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.green.withValues(alpha: 0.22),
+                          blurRadius: 10,
+                          offset: const Offset(0, 4),
+                        ),
+                      ],
                     ),
-                    child: Icon(icon, color: color, size: selected ? 23 : 21),
-                  ),
-                  const SizedBox(height: 2),
-                  FittedBox(
-                    fit: BoxFit.scaleDown,
-                    child: Text(
-                      label,
-                      maxLines: 1,
-                      style: TextStyle(
-                        color: color,
-                        fontSize: 10.5,
-                        fontWeight: selected
-                            ? FontWeight.w900
-                            : FontWeight.w700,
-                        height: 1,
-                      ),
+                    child: const Icon(
+                      Icons.add_rounded,
+                      color: Colors.white,
+                      size: 22,
                     ),
                   ),
-                ],
+                ),
+                const SizedBox(height: 3),
+                Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: const TextStyle(
+                    color: AppColors.green,
+                    fontSize: 9.5,
+                    fontWeight: FontWeight.w800,
+                    height: 1,
+                  ),
+                ),
+              ] else ...[
+                Icon(icon, color: color, size: 20),
+                const SizedBox(height: 3),
+                Text(
+                  label,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
+                  style: TextStyle(
+                    color: color,
+                    fontSize: 9.5,
+                    fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
+                    height: 1,
+                  ),
+                ),
               ],
-            ),
+            ],
           ),
         ),
       ),

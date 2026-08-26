@@ -85,27 +85,27 @@ class MessagesScreen extends StatelessWidget {
                     },
                     child: selectedChat == null
                         ? AppScaffold(
-                            currentRoute: '/messages',
-                            body: _MessagesSidebar(
-                              searchController: controller.searchController,
-                              filteredChats: controller.filteredChats,
-                              selectedChat: null,
-                              onSearchChanged: controller.updateSearch,
-                              onOpenChat: controller.openChat,
-                            ),
-                          )
+                      currentRoute: '/messages',
+                      body: _MessagesSidebar(
+                        searchController: controller.searchController,
+                        filteredChats: controller.filteredChats,
+                        selectedChat: null,
+                        onSearchChanged: controller.updateSearch,
+                        onOpenChat: controller.openChat,
+                      ),
+                    )
                         : Scaffold(
-                            backgroundColor: Colors.white,
-                            body: SafeArea(
-                              child: _ChatDetailPane(
-                                chat: selectedChat,
-                                replyController: controller.replyController,
-                                isDesktop: false,
-                                onBack: controller.closeChat,
-                                onSend: controller.clearReply,
-                              ),
-                            ),
-                          ),
+                      backgroundColor: Colors.white,
+                      body: SafeArea(
+                        child: _ChatDetailPane(
+                          chat: selectedChat,
+                          replyController: controller.replyController,
+                          isDesktop: false,
+                          onBack: controller.closeChat,
+                          onSend: controller.clearReply,
+                        ),
+                      ),
+                    ),
                   );
                 },
               );
@@ -186,13 +186,13 @@ class _MessagesSidebarState extends State<_MessagesSidebar> {
                           ),
                           suffixIcon: widget.searchController.text.isNotEmpty
                               ? IconButton(
-                                  icon: const Icon(Icons.close_rounded, size: 16),
-                                  color: AppColors.ink500,
-                                  onPressed: () {
-                                    widget.searchController.clear();
-                                    widget.onSearchChanged('');
-                                  },
-                                )
+                            icon: const Icon(Icons.close_rounded, size: 16),
+                            color: AppColors.ink500,
+                            onPressed: () {
+                              widget.searchController.clear();
+                              widget.onSearchChanged('');
+                            },
+                          )
                               : null,
                           border: InputBorder.none,
                           contentPadding: const EdgeInsets.symmetric(vertical: 10),
@@ -229,43 +229,43 @@ class _MessagesSidebarState extends State<_MessagesSidebar> {
         Expanded(
           child: widget.filteredChats.isEmpty
               ? Center(
-                  child: Padding(
-                    padding: const EdgeInsets.all(24.0),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Icon(
-                          Icons.chat_bubble_outline_rounded,
-                          size: 40,
-                          color: Colors.grey.shade400,
-                        ),
-                        const SizedBox(height: 12),
-                        const Text(
-                          'No messages found',
-                          style: TextStyle(
-                            color: AppColors.ink500,
-                            fontWeight: FontWeight.w700,
-                            fontSize: 14,
-                          ),
-                        ),
-                      ],
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(
+                    Icons.chat_bubble_outline_rounded,
+                    size: 40,
+                    color: Colors.grey.shade400,
+                  ),
+                  const SizedBox(height: 12),
+                  const Text(
+                    'No messages found',
+                    style: TextStyle(
+                      color: AppColors.ink500,
+                      fontWeight: FontWeight.w700,
+                      fontSize: 14,
                     ),
                   ),
-                )
+                ],
+              ),
+            ),
+          )
               : ListView.builder(
-                  padding: const EdgeInsets.only(bottom: 24),
-                  itemCount: widget.filteredChats.length,
-                  itemBuilder: (context, index) {
-                    final chat = widget.filteredChats[index];
-                    final isSelected = widget.selectedChat?.name == chat.name;
+            padding: const EdgeInsets.only(bottom: 24),
+            itemCount: widget.filteredChats.length,
+            itemBuilder: (context, index) {
+              final chat = widget.filteredChats[index];
+              final isSelected = widget.selectedChat?.name == chat.name;
 
-                    return _ChatListTile(
-                      chat: chat,
-                      isSelected: isSelected,
-                      onTap: () => widget.onOpenChat(chat),
-                    );
-                  },
-                ),
+              return _ChatListTile(
+                chat: chat,
+                isSelected: isSelected,
+                onTap: () => widget.onOpenChat(chat),
+              );
+            },
+          ),
         ),
       ],
     );
@@ -444,7 +444,7 @@ class _ChatDetailPane extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: [
-        // Chat Detail Top Bar (Matches exact image: Back Arrow, Avatar, Name, Time, 3-dots)
+        // Chat Detail Top Bar
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
           decoration: const BoxDecoration(
@@ -487,11 +487,9 @@ class _ChatDetailPane extends StatelessWidget {
                     ),
                     const SizedBox(height: 3),
                     Text(
-                      chat.name == 'David Courtney'
-                          ? '5:13 am GMT'
-                          : chat.name == 'Kevin Ross'
-                              ? '2:06 am GMT-05:00'
-                              : chat.messages.first.time,
+                      // Generic: just show when the first message in the
+                      // thread came in — no per-person special-casing.
+                      chat.messages.isNotEmpty ? chat.messages.first.time : chat.time,
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: const TextStyle(
@@ -513,7 +511,7 @@ class _ChatDetailPane extends StatelessWidget {
           ),
         ),
 
-        // Chat Message Thread (No Container boxes around text, plain clean text matching image)
+        // Chat Message Thread
         Expanded(
           child: Container(
             color: Colors.white,
@@ -523,47 +521,23 @@ class _ChatDetailPane extends StatelessWidget {
               itemBuilder: (context, index) {
                 final message = chat.messages[index];
 
-                bool showDateDivider = false;
-                String dateLabel = '';
-                bool showSender = false;
+                // Generic grouping rule, independent of who the chat is with:
+                // - A date divider before the very first message.
+                // - A second divider before the last message, only if the
+                //   thread has more than 2 messages (so short threads stay
+                //   on a single "day").
+                // - The sender header shows whenever the previous message
+                //   was from the other participant (i.e. a new "turn").
+                final isFirst = index == 0;
+                final isLast = index == chat.messages.length - 1;
+                final hasMultipleDays = chat.messages.length > 2;
 
-                if (chat.name == 'David Courtney') {
-                  if (index == 0) {
-                    showSender = false;
-                  } else if (index == 1) {
-                    showSender = false;
-                  } else if (index == 2) {
-                    showDateDivider = true;
-                    dateLabel = 'Yesterday';
-                    showSender = true;
-                  } else if (index == 3) {
-                    showSender = true;
-                  } else if (index == 4) {
-                    showDateDivider = true;
-                    dateLabel = 'Today';
-                    showSender = true;
-                  }
-                } else if (chat.name == 'Kevin Ross') {
-                  if (index == 0) {
-                    showSender = false;
-                  } else if (index == 1) {
-                    showDateDivider = true;
-                    dateLabel = 'Jul 27';
-                    showSender = true;
-                  }
-                } else {
-                  if (index == 0) {
-                    showDateDivider = true;
-                    dateLabel = 'Jul 15';
-                    showSender = true;
-                  } else if (index == chat.messages.length - 1) {
-                    showDateDivider = true;
-                    dateLabel = 'Jul 27';
-                    showSender = true;
-                  } else {
-                    showSender = true;
-                  }
-                }
+                final showDateDivider =
+                    isFirst || (hasMultipleDays && isLast);
+                final dateLabel = isFirst ? 'Earlier' : 'Today';
+
+                final showSender = index == 0 ||
+                    chat.messages[index - 1].fromMe != message.fromMe;
 
                 return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -585,7 +559,7 @@ class _ChatDetailPane extends StatelessWidget {
           ),
         ),
 
-        // Bottom Chat Composer (Matching exact image layout)
+        // Bottom Chat Composer
         _ChatComposer(controller: replyController, onSend: onSend),
       ],
     );
@@ -605,50 +579,24 @@ class _PlainMessageItem extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final senderName = message.fromMe ? 'Pavan Kumar' : chat.name;
-    final senderInitials = message.fromMe ? 'PK' : chat.initials;
+    // Generic "me" label — not tied to any real person.
+    final senderName = message.fromMe ? 'You' : chat.name;
+    final senderInitials = message.fromMe ? 'Me' : chat.initials;
 
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Sender Header Row with Avatar if showSender is true
           if (showSender) ...[
             Row(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                if (message.fromMe)
-                  Stack(
-                    clipBehavior: Clip.none,
-                    children: [
-                      const CircleAvatar(
-                        radius: 18,
-                        backgroundImage: NetworkImage(
-                          'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&q=80&w=120',
-                        ),
-                      ),
-                      Positioned(
-                        right: -1,
-                        bottom: -1,
-                        child: Container(
-                          width: 10,
-                          height: 10,
-                          decoration: BoxDecoration(
-                            color: AppColors.green,
-                            shape: BoxShape.circle,
-                            border: Border.all(color: Colors.white, width: 1.5),
-                          ),
-                        ),
-                      ),
-                    ],
-                  )
-                else
-                  _ChatAvatar(
-                    initials: senderInitials,
-                    online: chat.online,
-                    radius: 18,
-                  ),
+                _ChatAvatar(
+                  initials: senderInitials,
+                  online: message.fromMe ? true : chat.online,
+                  radius: 18,
+                ),
                 const SizedBox(width: 10),
                 Text(
                   senderName,
@@ -672,7 +620,7 @@ class _PlainMessageItem extends StatelessWidget {
             const SizedBox(height: 8),
           ],
 
-          // Plain Message Text - No container box, no background color, no border
+          // Plain Message Text - no container box, no background, no border
           SelectableText(
             message.text,
             style: const TextStyle(
@@ -829,7 +777,7 @@ class _ChatAvatar extends StatelessWidget {
             style: TextStyle(
               color: Colors.white,
               fontWeight: FontWeight.w900,
-              fontSize: radius * 0.65,
+              fontSize: radius * 0.55,
             ),
           ),
         ),
