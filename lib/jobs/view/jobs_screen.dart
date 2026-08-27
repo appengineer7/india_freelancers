@@ -16,6 +16,519 @@ class JobsScreen extends StatelessWidget {
   }
 }
 
+class FindWorkScreen extends StatefulWidget {
+  const FindWorkScreen({super.key});
+
+  @override
+  State<FindWorkScreen> createState() => _FindWorkScreenState();
+}
+
+class _FindWorkScreenState extends State<FindWorkScreen> {
+  final TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
+  String _activeFilter = 'All';
+  final Set<int> _savedJobIds = {2, 3};
+  final Set<String> _preferredSkills = {'Flutter', 'React', 'UI/UX Design'};
+
+  @override
+  void initState() {
+    super.initState();
+    _searchController.addListener(() {
+      setState(() {
+        _searchQuery = _searchController.text.trim();
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  List<_JobModel> get _filteredJobs {
+    final jobs = _mockJobs.where((job) {
+      if (_searchQuery.isNotEmpty) {
+        final query = _searchQuery.toLowerCase();
+        final matchesTitle = job.title.toLowerCase().contains(query);
+        final matchesDescription = job.description.toLowerCase().contains(
+          query,
+        );
+        final matchesSkills = job.skills.any(
+          (skill) => skill.toLowerCase().contains(query),
+        );
+        if (!matchesTitle && !matchesDescription && !matchesSkills) {
+          return false;
+        }
+      }
+
+      if (_activeFilter == 'Saved jobs' && !_savedJobIds.contains(job.id)) {
+        return false;
+      }
+
+      if (_activeFilter == 'My feed') {
+        return job.skills.any(_preferredSkills.contains);
+      }
+
+      return true;
+    }).toList();
+
+    if (_activeFilter == 'Most recent') {
+      return [...jobs]..sort((a, b) => a.id.compareTo(b.id));
+    }
+
+    return jobs;
+  }
+
+  void _toggleSaveJob(int id) {
+    setState(() {
+      if (_savedJobIds.contains(id)) {
+        _savedJobIds.remove(id);
+      } else {
+        _savedJobIds.add(id);
+      }
+    });
+  }
+
+  void _openFilterMenu() {
+    showModalBottomSheet<void>(
+      context: context,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
+      ),
+      builder: (context) {
+        const filters = ['All', 'Most recent', 'Saved jobs', 'My feed'];
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 14, 20, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Center(
+                  child: Container(
+                    width: 38,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(999),
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 18),
+                const Text(
+                  'Filter jobs',
+                  style: TextStyle(
+                    color: AppColors.navy,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                for (final filter in filters)
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(
+                      filter,
+                      style: const TextStyle(fontWeight: FontWeight.w800),
+                    ),
+                    trailing: _activeFilter == filter
+                        ? const Icon(
+                            Icons.check_circle_rounded,
+                            color: AppColors.green,
+                          )
+                        : null,
+                    onTap: () {
+                      setState(() {
+                        _activeFilter = filter;
+                      });
+                      Navigator.of(context).pop();
+                    },
+                  ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
+  }
+
+  void _showJobDetailModal(_JobModel job) {
+    showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.white,
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+      ),
+      builder: (context) {
+        return DraggableScrollableSheet(
+          expand: false,
+          initialChildSize: 0.76,
+          maxChildSize: 0.94,
+          minChildSize: 0.45,
+          builder: (context, scrollController) {
+            return SingleChildScrollView(
+              controller: scrollController,
+              padding: const EdgeInsets.fromLTRB(20, 16, 20, 24),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Center(
+                    child: Container(
+                      width: 40,
+                      height: 4,
+                      decoration: BoxDecoration(
+                        color: Colors.grey.shade300,
+                        borderRadius: BorderRadius.circular(2),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    job.title,
+                    style: const TextStyle(
+                      color: AppColors.navy,
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900,
+                      height: 1.25,
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    '${job.timeAgo} • ${job.location}',
+                    style: const TextStyle(
+                      color: AppColors.ink500,
+                      fontSize: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    job.description,
+                    style: const TextStyle(
+                      color: AppColors.ink700,
+                      fontSize: 15,
+                      height: 1.5,
+                    ),
+                  ),
+                  const SizedBox(height: 18),
+                  Wrap(
+                    spacing: 8,
+                    runSpacing: 8,
+                    children: job.skills
+                        .map((skill) => _PreferenceChip(label: skill))
+                        .toList(),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final jobs = _filteredJobs;
+
+    return AppScaffold(
+      currentRoute: '/find-work',
+      body: Container(
+        color: AppColors.cream50,
+        child: ListView(
+          padding: const EdgeInsets.fromLTRB(16, 14, 16, 116),
+          children: [
+            _FindWorkHero(
+              searchController: _searchController,
+              searchQuery: _searchQuery,
+              onClearSearch: _searchController.clear,
+            ),
+            const SizedBox(height: 16),
+            _PreferenceCard(preferredSkills: _preferredSkills),
+            const SizedBox(height: 20),
+            Row(
+              children: [
+                const Expanded(
+                  child: Text(
+                    'Posted jobs',
+                    style: TextStyle(
+                      color: AppColors.navy,
+                      fontWeight: FontWeight.w900,
+                      fontSize: 20,
+                    ),
+                  ),
+                ),
+                Text(
+                  '${jobs.length} found',
+                  style: const TextStyle(
+                    color: AppColors.green,
+                    fontWeight: FontWeight.w800,
+                    fontSize: 15,
+                  ),
+                ),
+                const SizedBox(width: 10),
+                _InlineFilterButton(
+                  label: _activeFilter,
+                  onTap: _openFilterMenu,
+                ),
+              ],
+            ),
+            const SizedBox(height: 12),
+            if (jobs.isEmpty)
+              const _FindWorkEmptyState()
+            else
+              for (final job in jobs)
+                _JobCardContainer(
+                  job: job,
+                  isSaved: _savedJobIds.contains(job.id),
+                  onToggleSave: () => _toggleSaveJob(job.id),
+                  onTap: () => _showJobDetailModal(job),
+                ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _FindWorkHero extends StatelessWidget {
+  const _FindWorkHero({
+    required this.searchController,
+    required this.searchQuery,
+    required this.onClearSearch,
+  });
+
+  final TextEditingController searchController;
+  final String searchQuery;
+  final VoidCallback onClearSearch;
+
+  @override
+  Widget build(BuildContext context) {
+    final compact = MediaQuery.sizeOf(context).width < 560;
+
+    return Container(
+      width: double.infinity,
+      padding: EdgeInsets.fromLTRB(
+        compact ? 18 : 24,
+        compact ? 20 : 26,
+        compact ? 18 : 24,
+        compact ? 18 : 24,
+      ),
+      decoration: BoxDecoration(
+        color: AppColors.navy,
+        borderRadius: BorderRadius.circular(compact ? 20 : 24),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Find work',
+            style: TextStyle(
+              color: Colors.white,
+              fontSize: 28,
+              fontWeight: FontWeight.w900,
+              height: 1.1,
+            ),
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Browse jobs matched to your skills and preferences.',
+            style: TextStyle(
+              color: Colors.white70,
+              fontSize: 14,
+              fontWeight: FontWeight.w600,
+              height: 1.35,
+            ),
+          ),
+          const SizedBox(height: 18),
+          Container(
+            height: 54,
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(15),
+            ),
+            child: TextField(
+              controller: searchController,
+              style: const TextStyle(
+                color: AppColors.navy,
+                fontSize: 15,
+                fontWeight: FontWeight.w700,
+              ),
+              decoration: InputDecoration(
+                hintText: 'Search for jobs',
+                hintStyle: const TextStyle(
+                  color: AppColors.ink300,
+                  fontSize: 16,
+                  fontWeight: FontWeight.w700,
+                ),
+                prefixIcon: const Icon(
+                  Icons.search_rounded,
+                  color: AppColors.ink500,
+                  size: 26,
+                ),
+                suffixIcon: searchQuery.isEmpty
+                    ? null
+                    : IconButton(
+                        icon: const Icon(Icons.close_rounded, size: 18),
+                        color: AppColors.ink500,
+                        onPressed: onClearSearch,
+                      ),
+                border: InputBorder.none,
+                contentPadding: const EdgeInsets.symmetric(vertical: 14),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PreferenceCard extends StatelessWidget {
+  const _PreferenceCard({required this.preferredSkills});
+
+  final Set<String> preferredSkills;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.cardBorder.withValues(alpha: 0.8)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Matched to your preferences',
+            style: TextStyle(
+              color: AppColors.navy,
+              fontSize: 16,
+              fontWeight: FontWeight.w900,
+            ),
+          ),
+          const SizedBox(height: 6),
+          const Text(
+            'My feed shows jobs that match these skills first.',
+            style: TextStyle(
+              color: AppColors.ink500,
+              fontSize: 13,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: preferredSkills
+                .map((skill) => _PreferenceChip(label: skill))
+                .toList(),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _PreferenceChip extends StatelessWidget {
+  const _PreferenceChip({required this.label});
+
+  final String label;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 11, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppColors.green100,
+        borderRadius: BorderRadius.circular(999),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(
+          color: AppColors.green,
+          fontSize: 12,
+          fontWeight: FontWeight.w800,
+        ),
+      ),
+    );
+  }
+}
+
+class _InlineFilterButton extends StatelessWidget {
+  const _InlineFilterButton({required this.label, required this.onTap});
+
+  final String label;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(13),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(13),
+        child: Container(
+          height: 42,
+          padding: const EdgeInsets.symmetric(horizontal: 12),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(13),
+            border: Border.all(color: AppColors.border),
+          ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              const Icon(Icons.tune_rounded, color: AppColors.green, size: 19),
+              const SizedBox(width: 6),
+              Text(
+                label,
+                style: const TextStyle(
+                  color: AppColors.navy,
+                  fontSize: 12,
+                  fontWeight: FontWeight.w900,
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class _FindWorkEmptyState extends StatelessWidget {
+  const _FindWorkEmptyState();
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 44),
+      child: Column(
+        children: [
+          Icon(Icons.search_off_rounded, size: 48, color: Colors.grey.shade400),
+          const SizedBox(height: 12),
+          const Text(
+            'No jobs match this filter yet',
+            textAlign: TextAlign.center,
+            style: TextStyle(
+              color: AppColors.ink500,
+              fontSize: 15,
+              fontWeight: FontWeight.w800,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
 class _JobsFeedView extends StatefulWidget {
   const _JobsFeedView({required this.currentRoute});
 
@@ -30,9 +543,10 @@ class _JobsFeedViewState extends State<_JobsFeedView> {
   String _searchQuery = '';
   String _activeTab =
       'Best matches'; // Best matches, Most recent, Saved jobs, My feed
-  String _selectedCategory = 'All';
-  String _selectedType = 'Any'; // Any, Fixed price, Hourly
+  final String _selectedCategory = 'All';
+  final String _selectedType = 'Any'; // Any, Fixed price, Hourly
   final Set<int> _savedJobIds = {2, 3};
+  final Set<String> _preferredSkills = {'Flutter', 'React', 'UI/UX Design'};
 
   @override
   void initState() {
@@ -66,6 +580,11 @@ class _JobsFeedViewState extends State<_JobsFeedView> {
         return false;
       }
 
+      if (_activeTab == 'My feed' &&
+          !job.skills.any(_preferredSkills.contains)) {
+        return false;
+      }
+
       if (_selectedCategory != 'All') {
         if (_selectedCategory == 'Development & IT' &&
             !job.skills.any(
@@ -96,7 +615,10 @@ class _JobsFeedViewState extends State<_JobsFeedView> {
       }
 
       return true;
-    }).toList();
+    }).toList()..sort((a, b) {
+      if (_activeTab == 'Most recent') return a.id.compareTo(b.id);
+      return 0;
+    });
   }
 
   void _toggleSaveJob(int id) {
@@ -109,190 +631,69 @@ class _JobsFeedViewState extends State<_JobsFeedView> {
     });
   }
 
-  void _openFiltersSheet() {
+  void _openJobListFilterSheet() {
     showModalBottomSheet<void>(
       context: context,
-      isScrollControlled: true,
       backgroundColor: Colors.white,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(22)),
       ),
-      builder: (ctx) {
-        return FractionallySizedBox(
-          heightFactor: 0.55,
-          child: StatefulBuilder(
-            builder: (context, setSheetState) {
-              return SingleChildScrollView(
-                child: Padding(
-                  padding: EdgeInsets.only(
-                    bottom: MediaQuery.of(context).viewInsets.bottom + 20,
-                    top: 16,
-                    left: 20,
-                    right: 20,
-                  ),
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      Center(
-                        child: Container(
-                          width: 38,
-                          height: 4,
-                          decoration: BoxDecoration(
-                            color: Colors.grey.shade300,
-                            borderRadius: BorderRadius.circular(2),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          const Text(
-                            'Filter Jobs',
-                            style: TextStyle(
-                              color: AppColors.navy,
-                              fontWeight: FontWeight.w900,
-                              fontSize: 20,
-                            ),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              setSheetState(() {
-                                _selectedCategory = 'All';
-                                _selectedType = 'Any';
-                              });
-                              setState(() {});
-                            },
-                            child: const Text(
-                              'Clear All',
-                              style: TextStyle(
-                                color: AppColors.green,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
-                      const Text(
-                        'Category',
-                        style: TextStyle(
-                          color: AppColors.navy,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 15,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
-                        children:
-                            [
-                              'All',
-                              'Development & IT',
-                              'Design & Creative',
-                              'AI & Data',
-                            ].map((cat) {
-                              final isSelected = _selectedCategory == cat;
-                              return ChoiceChip(
-                                label: Text(cat),
-                                selected: isSelected,
-                                selectedColor: AppColors.saffron100,
-                                backgroundColor: AppColors.cream50,
-                                labelStyle: TextStyle(
-                                  color: isSelected
-                                      ? AppColors.saffron700
-                                      : AppColors.navy,
-                                  fontWeight: isSelected
-                                      ? FontWeight.w800
-                                      : FontWeight.w600,
-                                  fontSize: 13,
-                                ),
-                                side: BorderSide(
-                                  color: isSelected
-                                      ? AppColors.saffron
-                                      : AppColors.cardBorder,
-                                ),
-                                onSelected: (val) {
-                                  if (val) {
-                                    setSheetState(
-                                      () => _selectedCategory = cat,
-                                    );
-                                    setState(() {});
-                                  }
-                                },
-                              );
-                            }).toList(),
-                      ),
-                      const SizedBox(height: 20),
-                      const Text(
-                        'Job Type',
-                        style: TextStyle(
-                          color: AppColors.navy,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 15,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Row(
-                        children: ['Any', 'Fixed price', 'Hourly'].map((type) {
-                          final isSelected = _selectedType == type;
-                          return Padding(
-                            padding: const EdgeInsets.only(right: 10),
-                            child: ChoiceChip(
-                              label: Text(type),
-                              selected: isSelected,
-                              selectedColor: AppColors.saffron100,
-                              backgroundColor: AppColors.cream50,
-                              labelStyle: TextStyle(
-                                color: isSelected
-                                    ? AppColors.saffron700
-                                    : AppColors.navy,
-                                fontWeight: isSelected
-                                    ? FontWeight.w800
-                                    : FontWeight.w600,
-                                fontSize: 13,
-                              ),
-                              side: BorderSide(
-                                color: isSelected
-                                    ? AppColors.saffron
-                                    : AppColors.cardBorder,
-                              ),
-                              onSelected: (val) {
-                                if (val) {
-                                  setSheetState(() => _selectedType = type);
-                                  setState(() {});
-                                }
-                              },
-                            ),
-                          );
-                        }).toList(),
-                      ),
-                      const SizedBox(height: 24),
-                      ElevatedButton(
-                        onPressed: () => Navigator.of(context).pop(),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.saffron,
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(10),
-                          ),
-                        ),
-                        child: const Text(
-                          'Apply Filters',
-                          style: TextStyle(
-                            color: Colors.white,
-                            fontWeight: FontWeight.w800,
-                            fontSize: 15,
-                          ),
-                        ),
-                      ),
-                    ],
+      builder: (context) {
+        const filters = [
+          'Best matches',
+          'Most recent',
+          'Saved jobs',
+          'My feed',
+        ];
+        return SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.fromLTRB(20, 14, 20, 20),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.stretch,
+              children: [
+                Center(
+                  child: Container(
+                    width: 38,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.shade300,
+                      borderRadius: BorderRadius.circular(999),
+                    ),
                   ),
                 ),
-              );
-            },
+                const SizedBox(height: 18),
+                const Text(
+                  'Filter jobs',
+                  style: TextStyle(
+                    color: AppColors.navy,
+                    fontSize: 20,
+                    fontWeight: FontWeight.w900,
+                  ),
+                ),
+                const SizedBox(height: 12),
+                for (final filter in filters)
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    title: Text(
+                      filter == 'Best matches' ? 'All' : filter,
+                      style: const TextStyle(fontWeight: FontWeight.w800),
+                    ),
+                    trailing: _activeTab == filter
+                        ? const Icon(
+                            Icons.check_circle_rounded,
+                            color: AppColors.green,
+                          )
+                        : null,
+                    onTap: () {
+                      setState(() {
+                        _activeTab = filter;
+                      });
+                      Navigator.of(context).pop();
+                    },
+                  ),
+              ],
+            ),
           ),
         );
       },
@@ -585,6 +986,7 @@ class _JobsFeedViewState extends State<_JobsFeedView> {
     return ListenableBuilder(
       listenable: authController,
       builder: (context, _) {
+        final isClient = authController.activeAccountMode == 'client';
         return AppScaffold(
           currentRoute: widget.currentRoute,
           body: Container(
@@ -592,91 +994,196 @@ class _JobsFeedViewState extends State<_JobsFeedView> {
             child: ListView(
               padding: const EdgeInsets.fromLTRB(16, 14, 16, 88),
               children: [
-                _JobsSearchFilterBar(
-                  searchController: _searchController,
-                  searchQuery: _searchQuery,
-                  onClearSearch: _searchController.clear,
-                  onOpenFilters: _openFiltersSheet,
-                ),
-                if (_searchQuery.isEmpty) ...[
+                if (!isClient)
+                  _JobsSearchFilterBar(
+                    searchController: _searchController,
+                    searchQuery: _searchQuery,
+                    onClearSearch: _searchController.clear,
+                  ),
+                if (isClient || _searchQuery.isEmpty) ...[
                   const SizedBox(height: 16),
                   _AccountModeCard(
                     activeMode: authController.activeAccountMode,
                     onActivateMode: authController.activateAccountMode,
                   ),
-                  const SizedBox(height: 16),
-                  _FindingWorkCard(
-                    activeTab: _activeTab,
-                    savedCount: _savedJobIds.length,
-                    onTabSelected: (tab) {
-                      setState(() {
-                        _activeTab = tab;
-                      });
-                    },
-                  ),
                 ],
-                const SizedBox(height: 20),
-                Row(
-                  children: [
-                    const Expanded(
-                      child: Text(
-                        'Posted jobs',
-                        style: TextStyle(
-                          color: AppColors.navy,
-                          fontWeight: FontWeight.w900,
-                          fontSize: 20,
-                        ),
-                      ),
-                    ),
-                    Text(
-                      '${jobs.length} found',
-                      style: const TextStyle(
-                        color: AppColors.green,
-                        fontWeight: FontWeight.w700,
-                        fontSize: 16,
-                      ),
-                    ),
+                if (isClient) ...[
+                  const SizedBox(height: 16),
+                  const _HiringCard(),
+                ],
+                if (!isClient) ...[
+                  if (_searchQuery.isEmpty) ...[
+                    const SizedBox(height: 16),
+                    const _FindingWorkCard(),
                   ],
-                ),
-                const SizedBox(height: 12),
-                if (jobs.isEmpty)
-                  Padding(
-                    padding: const EdgeInsets.symmetric(vertical: 40),
-                    child: Column(
-                      children: [
-                        Icon(
-                          Icons.search_off_rounded,
-                          size: 48,
-                          color: Colors.grey.shade400,
-                        ),
-                        const SizedBox(height: 12),
-                        Text(
-                          _searchQuery.isNotEmpty
-                              ? 'No jobs found matching "$_searchQuery"'
-                              : 'No saved jobs found',
-                          textAlign: TextAlign.center,
-                          style: const TextStyle(
-                            color: AppColors.ink500,
-                            fontSize: 15,
-                            fontWeight: FontWeight.w700,
+                  const SizedBox(height: 20),
+                  Row(
+                    children: [
+                      const Expanded(
+                        child: Text(
+                          'Posted jobs',
+                          style: TextStyle(
+                            color: AppColors.navy,
+                            fontWeight: FontWeight.w900,
+                            fontSize: 20,
                           ),
                         ),
-                      ],
-                    ),
-                  )
-                else
-                  for (final job in jobs)
-                    _JobCardContainer(
-                      job: job,
-                      isSaved: _savedJobIds.contains(job.id),
-                      onToggleSave: () => _toggleSaveJob(job.id),
-                      onTap: () => _showJobDetailModal(job),
-                    ),
+                      ),
+                      Text(
+                        '${jobs.length} found',
+                        style: const TextStyle(
+                          color: AppColors.green,
+                          fontWeight: FontWeight.w700,
+                          fontSize: 16,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      _InlineFilterButton(
+                        label: _activeTab == 'Best matches'
+                            ? 'All'
+                            : _activeTab,
+                        onTap: _openJobListFilterSheet,
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  if (jobs.isEmpty)
+                    Padding(
+                      padding: const EdgeInsets.symmetric(vertical: 40),
+                      child: Column(
+                        children: [
+                          Icon(
+                            Icons.search_off_rounded,
+                            size: 48,
+                            color: Colors.grey.shade400,
+                          ),
+                          const SizedBox(height: 12),
+                          Text(
+                            _searchQuery.isNotEmpty
+                                ? 'No jobs found matching "$_searchQuery"'
+                                : 'No saved jobs found',
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              color: AppColors.ink500,
+                              fontSize: 15,
+                              fontWeight: FontWeight.w700,
+                            ),
+                          ),
+                        ],
+                      ),
+                    )
+                  else
+                    for (final job in jobs)
+                      _JobCardContainer(
+                        job: job,
+                        isSaved: _savedJobIds.contains(job.id),
+                        onToggleSave: () => _toggleSaveJob(job.id),
+                        onTap: () => _showJobDetailModal(job),
+                      ),
+                ],
               ],
             ),
           ),
         );
       },
+    );
+  }
+}
+
+class _HiringCard extends StatelessWidget {
+  const _HiringCard();
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: AppColors.cardBorder.withValues(alpha: 0.8)),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.navy.withValues(alpha: 0.05),
+            blurRadius: 18,
+            offset: const Offset(0, 10),
+          ),
+        ],
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          const Text(
+            'Hiring',
+            style: TextStyle(
+              color: AppColors.navy,
+              fontWeight: FontWeight.w900,
+              fontSize: 16,
+            ),
+          ),
+          const SizedBox(height: 16),
+          Wrap(
+            spacing: 8,
+            runSpacing: 10,
+            children: [
+              _HiringActionButton(
+                label: 'Post a job',
+                route: '/post-job',
+                filled: true,
+              ),
+              _HiringActionButton(label: 'My jobs', route: '/jobs'),
+              _HiringActionButton(label: 'Offers sent', route: '/offers-sent'),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _HiringActionButton extends StatelessWidget {
+  const _HiringActionButton({
+    required this.label,
+    required this.route,
+    this.filled = false,
+  });
+
+  final String label;
+  final String route;
+  final bool filled;
+
+  @override
+  Widget build(BuildContext context) {
+    if (filled) {
+      return ElevatedButton(
+        onPressed: () => Navigator.of(context).pushNamed(route),
+        style: ElevatedButton.styleFrom(
+          backgroundColor: AppColors.green,
+          foregroundColor: Colors.white,
+          elevation: 8,
+          shadowColor: AppColors.green.withValues(alpha: 0.28),
+          padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 13),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9)),
+        ),
+        child: Text(
+          label,
+          style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900),
+        ),
+      );
+    }
+
+    return OutlinedButton(
+      onPressed: () => Navigator.of(context).pushNamed(route),
+      style: OutlinedButton.styleFrom(
+        foregroundColor: AppColors.navy,
+        side: BorderSide(color: AppColors.border),
+        padding: const EdgeInsets.symmetric(horizontal: 18, vertical: 13),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(9)),
+      ),
+      child: Text(
+        label,
+        style: const TextStyle(fontSize: 13, fontWeight: FontWeight.w900),
+      ),
     );
   }
 }
@@ -931,46 +1438,38 @@ class _AccountModeIllustration extends StatelessWidget {
 }
 
 class _FindingWorkCard extends StatelessWidget {
-  const _FindingWorkCard({
-    required this.activeTab,
-    required this.savedCount,
-    required this.onTabSelected,
-  });
-
-  final String activeTab;
-  final int savedCount;
-  final ValueChanged<String> onTabSelected;
+  const _FindingWorkCard();
 
   @override
   Widget build(BuildContext context) {
     final actions = <_WorkAction>[
       const _WorkAction(
         'Browse jobs',
-        'Best matches',
+        '/find-work',
         Icons.apartment_rounded,
         AppColors.green,
         Color(0xffedf9f1),
       ),
       const _WorkAction(
-        'Most recent',
-        'Most recent',
-        Icons.schedule_rounded,
+        'My proposals',
+        '/proposals',
+        Icons.article_outlined,
+        Color(0xff7b4bd8),
+        Color(0xfff5efff),
+      ),
+      const _WorkAction(
+        'Offers received',
+        '/offers-received',
+        Icons.card_giftcard_rounded,
         Color(0xff1976d2),
         Color(0xffeef6ff),
       ),
-      _WorkAction(
-        'Saved jobs ($savedCount)',
-        'Saved jobs',
-        Icons.bookmark_border_rounded,
-        AppColors.saffron,
-        const Color(0xfffff4ec),
-      ),
       const _WorkAction(
-        'My feed',
-        'My feed',
-        Icons.star_border_rounded,
-        Color(0xff7b4bd8),
-        Color(0xfff5efff),
+        'Invitations',
+        '/invitations',
+        Icons.mail_outline_rounded,
+        AppColors.saffron,
+        Color(0xfffff4ec),
       ),
     ];
 
@@ -1014,8 +1513,7 @@ class _FindingWorkCard extends StatelessWidget {
             children: actions.map((action) {
               return _WorkActionButton(
                 action: action,
-                selected: activeTab == action.tab,
-                onTap: () => onTabSelected(action.tab),
+                onTap: () => Navigator.of(context).pushNamed(action.route),
               );
             }).toList(),
           ),
@@ -1030,13 +1528,11 @@ class _JobsSearchFilterBar extends StatelessWidget {
     required this.searchController,
     required this.searchQuery,
     required this.onClearSearch,
-    required this.onOpenFilters,
   });
 
   final TextEditingController searchController;
   final String searchQuery;
   final VoidCallback onClearSearch;
-  final VoidCallback onOpenFilters;
 
   @override
   Widget build(BuildContext context) {
@@ -1089,29 +1585,6 @@ class _JobsSearchFilterBar extends StatelessWidget {
                 contentPadding: const EdgeInsets.symmetric(vertical: 10),
               ),
             ),
-          ),
-        ),
-        const SizedBox(width: 10),
-        Container(
-          width: 50,
-          height: 50,
-          decoration: BoxDecoration(
-            color: Colors.white,
-            borderRadius: BorderRadius.circular(15),
-            border: Border.all(color: AppColors.border.withValues(alpha: 0.8)),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.navy.withValues(alpha: 0.04),
-                blurRadius: 16,
-                offset: const Offset(0, 8),
-              ),
-            ],
-          ),
-          child: IconButton(
-            icon: const Icon(Icons.tune_rounded, size: 20),
-            color: AppColors.green,
-            tooltip: 'Filter options',
-            onPressed: onOpenFilters,
           ),
         ),
       ],
@@ -1285,14 +1758,9 @@ class _ActivateModeButton extends StatelessWidget {
 }
 
 class _WorkActionButton extends StatelessWidget {
-  const _WorkActionButton({
-    required this.action,
-    required this.selected,
-    required this.onTap,
-  });
+  const _WorkActionButton({required this.action, required this.onTap});
 
   final _WorkAction action;
-  final bool selected;
   final VoidCallback onTap;
 
   @override
@@ -1310,11 +1778,7 @@ class _WorkActionButton extends StatelessWidget {
           decoration: BoxDecoration(
             color: action.tint,
             borderRadius: BorderRadius.circular(14),
-            border: Border.all(
-              color: selected
-                  ? color.withValues(alpha: 0.34)
-                  : AppColors.cardBorder,
-            ),
+            border: Border.all(color: AppColors.cardBorder),
           ),
           child: Row(
             children: [
@@ -1346,10 +1810,10 @@ class _WorkActionButton extends StatelessWidget {
 }
 
 class _WorkAction {
-  const _WorkAction(this.label, this.tab, this.icon, this.color, this.tint);
+  const _WorkAction(this.label, this.route, this.icon, this.color, this.tint);
 
   final String label;
-  final String tab;
+  final String route;
   final IconData icon;
   final Color color;
   final Color tint;

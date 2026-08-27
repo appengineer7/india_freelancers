@@ -529,7 +529,7 @@ class _JobsMenuPanel extends StatelessWidget {
                 ),
                 const SizedBox(height: 18),
                 ..._dashboardMenuItemsForMode(accountMode).map(
-                      (item) => _JobsMenuTile(
+                  (item) => _JobsMenuTile(
                     item: item,
                     onTap: () => onNavigate(item.route),
                   ),
@@ -693,10 +693,10 @@ Iterable<_MenuRoute> _dashboardMenuItemsForMode(String accountMode) {
     '/settings',
   };
   final visibleRoutes = accountMode == 'client'
-      ? freelancerRoutes
-      : clientRoutes;
+      ? clientRoutes
+      : freelancerRoutes;
   return _dashboardMenuItems.where(
-        (item) => visibleRoutes.contains(item.route),
+    (item) => visibleRoutes.contains(item.route),
   );
 }
 
@@ -735,37 +735,37 @@ class AppAppBar extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: Colors.white,
       leading: showBackButton
           ? IconButton(
-        icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
-        color: AppColors.navy,
-        onPressed: () {
-          final navigator = Navigator.of(context);
-          if (navigator.canPop()) {
-            navigator.pop();
-          } else {
-            navigator.pushReplacementNamed('/');
-          }
-        },
-      )
+              icon: const Icon(Icons.arrow_back_ios_new_rounded, size: 20),
+              color: AppColors.navy,
+              onPressed: () {
+                final navigator = Navigator.of(context);
+                if (navigator.canPop()) {
+                  navigator.pop();
+                } else {
+                  navigator.pushReplacementNamed('/');
+                }
+              },
+            )
           : null,
       title: title != null
           ? Text(
-        title!,
-        style: const TextStyle(
-          color: AppColors.navy,
-          fontWeight: FontWeight.w900,
-          fontSize: 17,
-        ),
-      )
+              title!,
+              style: const TextStyle(
+                color: AppColors.navy,
+                fontWeight: FontWeight.w900,
+                fontSize: 17,
+              ),
+            )
           : const BrandLockup(compact: true),
       actions: showNotification
           ? [
-        IconButton(
-          icon: const Icon(Icons.notifications_outlined, size: 24),
-          color: AppColors.ink700,
-          onPressed: () => Navigator.of(context).pushNamed('/alerts'),
-        ),
-        const SizedBox(width: 4),
-      ]
+              IconButton(
+                icon: const Icon(Icons.notifications_outlined, size: 24),
+                color: AppColors.ink700,
+                onPressed: () => Navigator.of(context).pushNamed('/alerts'),
+              ),
+              const SizedBox(width: 4),
+            ]
           : null,
     );
   }
@@ -813,14 +813,14 @@ class AppBottomNav extends StatelessWidget {
     _NavItem('/jobs', Icons.business_center_rounded, 'My jobs'),
     _NavItem('/post-job', Icons.add_rounded, 'Post a job'),
     _NavItem('/messages', Icons.chat_bubble_rounded, 'Messages'),
-    _NavItem('/settings', Icons.settings_rounded, 'Settings'),
+    _NavItem('/settings', Icons.grid_view_rounded, 'Menu'),
   ];
 
   static const _freelancerNavItems = [
     _NavItem('/overview', Icons.home_rounded, 'Dashboard'),
     _NavItem('/proposals', Icons.article_rounded, 'My proposals'),
     _NavItem('/messages', Icons.chat_bubble_rounded, 'Messages'),
-    _NavItem('/settings', Icons.settings_rounded, 'Settings'),
+    _NavItem('/settings', Icons.grid_view_rounded, 'Menu'),
   ];
 
   @override
@@ -828,42 +828,55 @@ class AppBottomNav extends StatelessWidget {
     final accountMode =
         AuthBinding.maybeOf(context)?.activeAccountMode ?? 'freelancer';
     final navItems = accountMode == 'client'
-        ? _freelancerNavItems
-        : _clientNavItems;
+        ? _clientNavItems
+        : _freelancerNavItems;
 
     return SafeArea(
       top: false,
-      child: Container(
-        height: 64,
-        padding: const EdgeInsets.fromLTRB(8, 4, 8, 4),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: const BorderRadius.vertical(top: Radius.circular(20)),
-          border: Border(
-            top: BorderSide(color: AppColors.border.withValues(alpha: 0.55)),
-          ),
-          boxShadow: [
-            BoxShadow(
-              color: AppColors.navy.withValues(alpha: 0.08),
-              blurRadius: 14,
-              offset: const Offset(0, -4),
-            ),
-          ],
-        ),
-        child: Row(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            for (final item in navItems)
-              Expanded(
-                child: _BottomNavItem(
-                  route: item.route,
-                  icon: item.icon,
-                  label: item.label,
-                  selected: currentRoute == item.route,
-                  onTap: () => _navigate(context, item.route),
+      minimum: const EdgeInsets.fromLTRB(14, 0, 14, 10),
+      child: SizedBox(
+        height: 88,
+        child: Align(
+          alignment: Alignment.bottomCenter,
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 430),
+            child: Container(
+              height: 78,
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+              decoration: BoxDecoration(
+                color: Colors.white,
+                borderRadius: BorderRadius.circular(24),
+                border: Border.all(
+                  color: AppColors.border.withValues(alpha: 0.35),
                 ),
+                boxShadow: [
+                  BoxShadow(
+                    color: AppColors.navy.withValues(alpha: 0.12),
+                    blurRadius: 24,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
               ),
-          ],
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  for (var index = 0; index < navItems.length; index++)
+                    Expanded(
+                      child: _BottomNavItem(
+                        route: navItems[index].route,
+                        icon: navItems[index].icon,
+                        label: navItems[index].label,
+                        selected: currentRoute == navItems[index].route,
+                        prominent:
+                            navItems.length.isOdd &&
+                            index == navItems.length ~/ 2,
+                        onTap: () => _navigate(context, navItems[index].route),
+                      ),
+                    ),
+                ],
+              ),
+            ),
+          ),
         ),
       ),
     );
@@ -888,6 +901,7 @@ class _BottomNavItem extends StatelessWidget {
     required this.icon,
     required this.label,
     required this.selected,
+    required this.prominent,
     required this.onTap,
   });
 
@@ -895,73 +909,58 @@ class _BottomNavItem extends StatelessWidget {
   final IconData icon;
   final String label;
   final bool selected;
+  final bool prominent;
   final VoidCallback onTap;
 
   @override
   Widget build(BuildContext context) {
-    final activeColor = AppColors.green;
+    const activeColor = Color(0xff2f80ed);
     final inactiveColor = AppColors.ink500;
     final color = selected ? activeColor : inactiveColor;
-    final isCreate = route == '/post-job';
 
     return Material(
       color: Colors.transparent,
       child: InkWell(
         onTap: onTap,
-        borderRadius: BorderRadius.circular(14),
+        borderRadius: BorderRadius.circular(18),
         child: SizedBox(
-          height: 56,
+          height: 70,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              if (isCreate) ...[
+              if (prominent) ...[
                 Transform.translate(
-                  offset: const Offset(0, -3),
+                  offset: const Offset(0, -20),
                   child: Container(
-                    width: 38,
-                    height: 38,
+                    width: 64,
+                    height: 64,
                     decoration: BoxDecoration(
-                      color: AppColors.green,
+                      color: activeColor,
                       shape: BoxShape.circle,
+                      border: Border.all(color: Colors.white, width: 6),
                       boxShadow: [
                         BoxShadow(
-                          color: AppColors.green.withValues(alpha: 0.22),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
+                          color: activeColor.withValues(alpha: 0.32),
+                          blurRadius: 22,
+                          offset: const Offset(0, 8),
                         ),
                       ],
                     ),
-                    child: const Icon(
-                      Icons.add_rounded,
-                      color: Colors.white,
-                      size: 22,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 3),
-                Text(
-                  label,
-                  maxLines: 1,
-                  overflow: TextOverflow.ellipsis,
-                  style: const TextStyle(
-                    color: AppColors.green,
-                    fontSize: 9.5,
-                    fontWeight: FontWeight.w800,
-                    height: 1,
+                    child: Icon(icon, color: Colors.white, size: 28),
                   ),
                 ),
               ] else ...[
-                Icon(icon, color: color, size: 20),
-                const SizedBox(height: 3),
+                Icon(icon, color: color, size: 23),
+                const SizedBox(height: 5),
                 Text(
                   label,
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     color: color,
-                    fontSize: 9.5,
-                    fontWeight: selected ? FontWeight.w800 : FontWeight.w600,
+                    fontSize: 11,
+                    fontWeight: selected ? FontWeight.w800 : FontWeight.w700,
                     height: 1,
                   ),
                 ),

